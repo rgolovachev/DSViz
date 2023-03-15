@@ -1,8 +1,7 @@
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-# здесь кажется нужно указать свой путь до библиотеки qwt
-include ( /usr/local/qwt-6.2.0/features/qwt.prf )
+include ( ./qwt/qwt.prf )
 
 CONFIG += c++17
 
