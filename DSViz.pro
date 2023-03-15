@@ -15,7 +15,6 @@ QMAKE_CXXFLAGS += -O3
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    Debug/debug.cpp \
     main.cpp \
     App/mainwindow.cpp \
     Observer/observer.cpp \
@@ -24,7 +23,6 @@ SOURCES += \
 HEADERS += \
     App/app.h \
     Core/controller.h \
-    Debug/debug.h \
     App/mainwindow.h \
     Core/model.h \
     Common/node.h \
