@@ -17,52 +17,73 @@ namespace DSViz {
 namespace detail {
 
 template <typename T> class Trees {
+public:
+  ~Trees();
+
+  void Destroy(int id);
+
+  void Insert(std::pair<int, PNode<T>> tree);
+
+  void Erase(int id);
+
+  size_t Size();
+
+  PNode<T> &operator[](int key);
+
+  BareTrees<T> Get();
+
 private:
-  void destroy(PNode<T> root) {
-    if (!root) {
-      return;
-    }
-    destroy(root->left);
-    destroy(root->right);
-    delete root;
-  }
+  void destroy(PNode<T> root);
 
   BareTrees<T> trees_;
-
-public:
-  void Destroy(int id) {
-    if (trees_.find(id) != trees_.end()) {
-      destroy(trees_[id]);
-    }
-  }
-
-  ~Trees() {
-    for (auto tree : trees_) {
-      destroy(tree.second);
-    }
-  }
-
-  void Insert(std::pair<int, PNode<T>> tree) { trees_.insert(tree); }
-
-  void Erase(int id) {
-    if (trees_.find(id) != trees_.end()) {
-      trees_.erase(id);
-    }
-  }
-
-  size_t Size() { return trees_.size(); }
-
-  PNode<T> &operator[](int key) { return trees_[key]; }
-
-  BareTrees<T> Get() { return trees_; }
 };
+
+template <typename T> Trees<T>::~Trees() {
+  for (auto tree : trees_) {
+    destroy(tree.second);
+  }
+}
+
+template <typename T> void Trees<T>::Destroy(int id) {
+  if (trees_.find(id) != trees_.end()) {
+    destroy(trees_[id]);
+  }
+}
+
+template <typename T> void Trees<T>::Insert(std::pair<int, PNode<T>> tree) {
+  trees_.insert(tree);
+}
+
+template <typename T> void Trees<T>::Erase(int id) {
+  if (trees_.find(id) != trees_.end()) {
+    trees_.erase(id);
+  }
+}
+
+template <typename T> size_t Trees<T>::Size() { return trees_.size(); }
+
+template <typename T> PNode<T> &Trees<T>::operator[](int key) {
+  return trees_[key];
+}
+
+template <typename T> BareTrees<T> Trees<T>::Get() { return trees_; }
+
+template <typename T> void Trees<T>::destroy(PNode<T> root) {
+  if (!root) {
+    return;
+  }
+  destroy(root->left);
+  destroy(root->right);
+  delete root;
+}
 
 } // namespace detail
 
 template <typename T> class Model {
-public:
   using Trees = detail::Trees<T>;
+  using PNode = PNode<T>;
 
+public:
   Model();
 
   void Insert(int id, const T &key);
@@ -80,8 +101,6 @@ public:
   IObservable *GetPort();
 
 private:
-  using PNode = PNode<T>;
-
   void update(PNode v);
   void rotate_left(PNode v);
   void rotate_right(PNode v);

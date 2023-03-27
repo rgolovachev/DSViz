@@ -75,32 +75,43 @@ public slots:
 };
 
 template <typename T> class ReadyTree {
+public:
+  ~ReadyTree();
+
+  void Set(PVNode<T> root);
+
+  PVNode<T> Get();
+
 private:
-  void Destroy(PVNode<T> root) {
-    if (!root) {
-      return;
-    }
-    Destroy(root->left);
-    Destroy(root->right);
-    delete root;
-  }
+  void Destroy(PVNode<T> root);
 
   PVNode<T> tree_ = {};
-
-public:
-  ~ReadyTree() { Destroy(tree_); }
-
-  void Set(PVNode<T> root) {
-    Destroy(tree_);
-    tree_ = root;
-  }
-
-  PVNode<T> Get() { return tree_; }
 };
+
+template <typename T> ReadyTree<T>::~ReadyTree() { Destroy(tree_); }
+
+template <typename T> void ReadyTree<T>::Set(PVNode<T> root) {
+  Destroy(tree_);
+  tree_ = root;
+}
+
+template <typename T> PVNode<T> ReadyTree<T>::Get() { return tree_; }
+
+template <typename T> void ReadyTree<T>::Destroy(PVNode<T> root) {
+  if (!root) {
+    return;
+  }
+  Destroy(root->left);
+  Destroy(root->right);
+  delete root;
+}
 
 } // namespace detail
 
 template <typename T> class View : public detail::BaseView {
+  using ReadyTree = detail::ReadyTree<T>;
+  using CustomPanner = detail::CustomPanner;
+
 public:
   View(IObservable *observable);
 
@@ -113,22 +124,6 @@ public:
   void OnChoiceChange(QString num) override;
 
 private:
-  using ReadyTree = detail::ReadyTree<T>;
-  using CustomPanner = detail::CustomPanner;
-  ReadyTree cur_tree_;
-  BareTrees<T> trees_;
-
-  std::unique_ptr<MainWindow> MW_;
-  std::unique_ptr<CustomPanner> panner_;
-  QTimer timer_;
-  double scale_;
-  bool stopped_;
-  bool merge_executing_;
-  int x_, y_;
-
-  std::unique_ptr<IObserver> port_in_;
-  std::unique_ptr<IObservable> port_out_;
-
   void ConnectWidgets();
   void ConfigureWidgets();
   void SetCallback(IObservable *observable);
@@ -156,6 +151,20 @@ private:
   void Delay(double sWait);
   void SetEnabledWidgets(bool flag);
   void ConvertString(T &ver, bool &ver_correct);
+
+  // data
+  ReadyTree cur_tree_;
+  BareTrees<T> trees_;
+  std::unique_ptr<MainWindow> MW_;
+  std::unique_ptr<CustomPanner> panner_;
+  QTimer timer_;
+  double scale_;
+  bool stopped_;
+  bool merge_executing_;
+  int x_, y_;
+
+  std::unique_ptr<IObserver> port_in_;
+  std::unique_ptr<IObservable> port_out_;
 };
 
 template <typename T>
