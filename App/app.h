@@ -8,13 +8,11 @@ namespace DSViz {
 
 template <typename T> class App {
 public:
-  App()
-      : model_{}, view_{model_.GetPort()}, controller_{view_.GetPort(),
-                                                       &model_} {}
+  App() : view_{model_.GetPort()}, controller_{view_.GetPort(), &model_} {}
 
 private:
   // 176 байт все поля весят, я думаю это приемлемо
-  Model<T> model_;
+  Model<T> model_ = {};
   View<T> view_;
   Controller<T> controller_;
 };

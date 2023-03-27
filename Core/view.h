@@ -153,15 +153,16 @@ private:
   void ConvertString(T &ver, bool &ver_correct);
 
   // data
-  ReadyTree cur_tree_;
+  ReadyTree cur_tree_ = {};
   BareTrees<T> trees_;
   std::unique_ptr<MainWindow> MW_;
   std::unique_ptr<CustomPanner> panner_;
   QTimer timer_;
-  double scale_;
-  bool stopped_;
-  bool merge_executing_;
-  int x_, y_;
+  double scale_ = 1;
+  bool stopped_ = {};
+  bool merge_executing_ = {};
+  int x_ = {};
+  int y_ = {};
 
   std::unique_ptr<IObserver> port_in_;
   std::unique_ptr<IObservable> port_out_;
@@ -169,9 +170,9 @@ private:
 
 template <typename T>
 View<T>::View(IObservable *observable)
-    : cur_tree_{}, MW_{new MainWindow{}},
-      panner_{new CustomPanner(MW_->ui->qwt_plot->canvas())}, scale_{1},
-      stopped_{}, merge_executing_{}, x_{}, y_{}, port_out_{new Observable{}} {
+    : MW_{std::make_unique<MainWindow>()},
+      panner_{std::make_unique<CustomPanner>(MW_->ui->qwt_plot->canvas())},
+      port_out_{std::make_unique<Observable>()} {
   ConnectWidgets();
   ConfigureWidgets();
   SetCallback(observable);
@@ -305,7 +306,7 @@ template <typename T> void View<T>::SetCallback(IObservable *observable) {
       this->Delay(this->MW_->ui->delayTime->value());
     }
   };
-  port_in_.reset(new Observer{observable, callback});
+  port_in_ = std::move(std::make_unique<Observer>(observable, callback));
 }
 
 template <typename T> QString View<T>::GetText(QComboBox *ptr) {

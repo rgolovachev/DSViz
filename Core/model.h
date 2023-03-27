@@ -128,13 +128,13 @@ private:
 
   void set_regular(PNode root, PNode prev = nullptr);
 
-  Trees data_;
+  Trees data_ = {};
   std::unique_ptr<IObservable> port_out_;
-  int next_id_;
+  int next_id_ = {};
 };
 
 template <typename T>
-Model<T>::Model() : data_{}, port_out_{new Observable()}, next_id_{} {
+Model<T>::Model() : port_out_{std::make_unique<Observable>()} {
   data_.Insert({next_id_++, nullptr});
 }
 

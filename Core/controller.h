@@ -81,7 +81,7 @@ template <typename T> void Controller<T>::SetCallback(IObservable *observable) {
       this->DeleteTree(msg.args);
     }
   };
-  port_in_.reset(new Observer{observable, lambda});
+  port_in_ = std::move(std::make_unique<Observer>(observable, lambda));
 }
 
 } // namespace DSViz
