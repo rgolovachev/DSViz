@@ -19,7 +19,7 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
-  Ui::MainWindow *ui;
+  std::unique_ptr<Ui::MainWindow> ui;
 };
 } // namespace DSViz
 #endif // MAINWINDOW_H

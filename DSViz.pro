@@ -7,7 +7,19 @@ CONFIG += c++17
 
 CONFIG += qwt
 
-QMAKE_CXXFLAGS += -O3
+### comment this when push
+#SOURCES += Debug/debug.cpp
+#HEADERS += Debug/debug.h
+###
+
+
+# решил забить на исключения, qwt вроде не должна их бросать
+# (сделал grep по слову throw в папке src и не нашел ничего)
+QMAKE_CXXFLAGS += -fno-exceptions
+
+# с ходу не нашел как проверять версию компилятора в qmake
+# вроде перф сильно не просел после того как я закомментил строчку
+#QMAKE_CXXFLAGS += -O3
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.

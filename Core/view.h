@@ -102,7 +102,7 @@ public:
 
 template <typename T> class View : public detail::BaseView {
 public:
-  View(IObservable *observable, const MainWindow *MW);
+  View(IObservable *observable);
 
   IObservable *GetPort();
 
@@ -118,7 +118,7 @@ private:
   ReadyTree cur_tree_;
   BareTrees<T> trees_;
 
-  const MainWindow *MW_;
+  std::unique_ptr<MainWindow> MW_;
   std::unique_ptr<CustomPanner> panner_;
   QTimer timer_;
   double scale_;
@@ -159,13 +159,14 @@ private:
 };
 
 template <typename T>
-View<T>::View(IObservable *observable, const MainWindow *MW)
-    : cur_tree_{}, MW_{MW},
+View<T>::View(IObservable *observable)
+    : cur_tree_{}, MW_{new MainWindow{}},
       panner_{new CustomPanner(MW_->ui->qwt_plot->canvas())}, scale_{1},
       stopped_{}, merge_executing_{}, x_{}, y_{}, port_out_{new Observable{}} {
   ConnectWidgets();
   ConfigureWidgets();
   SetCallback(observable);
+  MW_->show();
 }
 
 template <typename T> IObservable *View<T>::GetPort() {
