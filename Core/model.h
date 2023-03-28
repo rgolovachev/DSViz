@@ -3,6 +3,7 @@
 #include "Common/node.h"
 #include "Observer/observer.h"
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <functional>
 #include <initializer_list>
@@ -63,6 +64,7 @@ template <typename T> void Trees<T>::Erase(int id) {
 template <typename T> size_t Trees<T>::Size() { return trees_.size(); }
 
 template <typename T> PNode<T> &Trees<T>::operator[](int key) {
+  assert(trees_.find(key) != trees_.end());
   return trees_[key];
 }
 
@@ -111,7 +113,7 @@ private:
   void zig_zig(PNode v, PNode hidden_root, bool is_right_zig_zig);
   void zig_zag(PNode v, PNode hidden_root, bool is_right_left);
 
-  void set_color(PNode v, PNode A, PNode B, PNode C, PNode D = nullptr);
+  void set_state(PNode v, PNode A, PNode B, PNode C, PNode D = nullptr);
   void update_root(PNode old_root, PNode new_root);
 
   // find, insert, merge и т.д. я пишу не в camel case чтобы не было путаницы с
@@ -127,6 +129,8 @@ private:
   PNode remove(PNode v, const T &key, bool *res = nullptr);
 
   void set_regular(PNode root, PNode prev = nullptr);
+
+  static PNode make_hidden_root(PNode ltree, PNode rtree);
 
   Trees data_ = {};
   std::unique_ptr<IObservable> port_out_;
@@ -181,14 +185,7 @@ template <typename T> void Model<T>::Merge(int left_id, int right_id) {
   }
   if (data_[left_id]->max < data_[right_id]->min) {
     auto ltree = data_[left_id], rtree = data_[right_id];
-    PNode hidden_root{new Node<T>{
-        .par = nullptr,
-        .left = ltree,
-        .right = rtree,
-        .value = ltree->max,
-        .min = 0,
-        .max = 0,
-    }};
+    auto hidden_root = make_hidden_root(ltree, rtree);
     update(hidden_root);
     rtree->par = hidden_root;
     data_[left_id] = hidden_root;
@@ -216,13 +213,7 @@ template <typename T> void Model<T>::Split(int id, const T &key) {
     if (rtree) {
       rtree->state = State::REGULAR;
     }
-    data_[id] = new Node<T>{.par = nullptr,
-                            .left = ltree,
-                            .right = rtree,
-                            .value = ltree->max,
-                            .min = 0,
-                            .max = 0,
-                            .state = State::HIDE_THIS};
+    data_[id] = make_hidden_root(ltree, rtree);
     update(data_[id]);
   }
   port_out_->Set(std::make_pair(MsgCode::SPLIT_SUCC, data_.Get()));
@@ -354,9 +345,9 @@ template <typename T> void Model<T>::splay(PNode v, PNode hidden_root) {
 template <typename T>
 void Model<T>::zig(PNode v, PNode hidden_root, bool is_right_zig) {
   if (is_right_zig) {
-    set_color(v, v->left, v->right, v->par->right);
+    set_state(v, v->left, v->right, v->par->right);
   } else {
-    set_color(v, v->par->left, v->left, v->right);
+    set_state(v, v->par->left, v->left, v->right);
   }
   port_out_->Set(std::make_pair(MsgCode::ZIG_PERF, data_.Get()));
 
@@ -378,9 +369,9 @@ void Model<T>::zig(PNode v, PNode hidden_root, bool is_right_zig) {
 template <typename T>
 void Model<T>::zig_zig(PNode v, PNode hidden_root, bool is_right_zig_zig) {
   if (is_right_zig_zig) {
-    set_color(v, v->left, v->right, v->par->right, v->par->par->right);
+    set_state(v, v->left, v->right, v->par->right, v->par->par->right);
   } else {
-    set_color(v, v->par->par->left, v->par->left, v->left, v->right);
+    set_state(v, v->par->par->left, v->par->left, v->left, v->right);
   }
   port_out_->Set(std::make_pair(MsgCode::ZIGZIG_PERF, data_.Get()));
 
@@ -420,9 +411,9 @@ void Model<T>::zig_zig(PNode v, PNode hidden_root, bool is_right_zig_zig) {
 template <typename T>
 void Model<T>::zig_zag(PNode v, PNode hidden_root, bool is_right_left) {
   if (is_right_left) {
-    set_color(v, v->par->par->left, v->left, v->right, v->par->right);
+    set_state(v, v->par->par->left, v->left, v->right, v->par->right);
   } else {
-    set_color(v, v->par->left, v->left, v->right, v->par->par->right);
+    set_state(v, v->par->left, v->left, v->right, v->par->par->right);
   }
   port_out_->Set(std::make_pair(MsgCode::ZIGZAG_PERF, data_.Get()));
 
@@ -450,7 +441,7 @@ void Model<T>::zig_zag(PNode v, PNode hidden_root, bool is_right_left) {
 }
 
 template <typename T>
-void Model<T>::set_color(PNode v, PNode A, PNode B, PNode C, PNode D) {
+void Model<T>::set_state(PNode v, PNode A, PNode B, PNode C, PNode D) {
   set_regular(v);
   v->state = State::X_VERTEX;
   v->par->state = State::P_VERTEX;
@@ -622,7 +613,6 @@ PNode<T> Model<T>::insert(PNode v, const T &key, bool *res) {
 // необходимо учитывать
 
 template <typename T> PNode<T> Model<T>::merge(PNode hidden_root) {
-  hidden_root->state = State::HIDE_THIS;
   port_out_->Set(std::make_pair(MsgCode::MERGE_PERF, data_.Get()));
 
   auto ltree = hidden_root->left, rtree = hidden_root->right;
@@ -665,6 +655,7 @@ PNode<T> Model<T>::remove(PNode v, const T &key, bool *res) {
     }
     v->state = State::DO_REMOVE;
     port_out_->Set(std::make_pair(MsgCode::DO_REM, data_.Get()));
+    v->state = State::HIDE_THIS;
     return merge(v);
   }
 
@@ -692,6 +683,17 @@ template <typename T> void Model<T>::set_regular(PNode root, PNode prev) {
   }
 
   root->state = State::REGULAR;
+}
+
+template <typename T>
+PNode<T> Model<T>::make_hidden_root(PNode ltree, PNode rtree) {
+  return new Node<T>{.par = nullptr,
+                     .left = ltree,
+                     .right = rtree,
+                     .value = ltree->max,
+                     .min = 0,
+                     .max = 0,
+                     .state = State::HIDE_THIS};
 }
 
 } // namespace DSViz

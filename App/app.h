@@ -11,7 +11,7 @@ public:
   App() : view_{model_.GetPort()}, controller_{view_.GetPort(), &model_} {}
 
 private:
-  // 176 байт все поля весят, я думаю это приемлемо
+  // эти поля весят <= 200 байт, мне кажется это приемлемо
   Model<T> model_ = {};
   View<T> view_;
   Controller<T> controller_;
