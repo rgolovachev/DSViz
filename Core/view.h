@@ -52,6 +52,41 @@ inline std::map<State, QColor> StateToClr = {
     {State::INSERTED, QColor::fromRgb(0, 255, 255)},
     {State::NEW_ROOT, QColor::fromRgb(255, 215, 0)}};
 
+inline std::map<MsgCode, const char *> StrMsg = {
+    {MsgCode::OK, "OK"},
+    {MsgCode::WRONG_ID, "ERROR: There is no tree with this ID"},
+    {MsgCode::INSERT_ERR, "ERROR: This key already exists in the tree"},
+    {MsgCode::REMOVE_ERR, "ERROR: This key doesn't exist in the tree"},
+    {MsgCode::MERGE_ERR,
+     "ERROR: The maximum value of the first tree must be lower "
+     "than the minimum value of the second one"},
+    {MsgCode::SPLIT_ERR, "The target tree is empty"},
+    {MsgCode::SEARCH, "Program is searching for vertex"},
+    {MsgCode::NOT_FOUND, "The value hasn't found"},
+    {MsgCode::FOUND, "The value has found"},
+    {MsgCode::UNSUCC_DEL, "You must leave at least one tree"},
+    {MsgCode::SUCC_DEL, "The tree was deleted successfuly"},
+    {MsgCode::SPLIT_PERF, "Split is performing"},
+    {MsgCode::SPLAY_PERF, "Splay is performing"},
+    {MsgCode::ZIG_PERF, "Zig is performing"},
+    {MsgCode::ZIG_END, "Zig has been executed"},
+    {MsgCode::ZIGZAG_PERF, "Zig-zag is performing"},
+    {MsgCode::ZIGZAG_END, "Zig-zag has been executed"},
+    {MsgCode::ZIGZIG_PERF, "Zig-zig is performing"},
+    {MsgCode::ZIGZIG_END, "Zig-zig has been executed"},
+    {MsgCode::MERGE_PERF, "Merge is performing"},
+    {MsgCode::R_SEARCH, "Search for the most right vertex..."},
+    {MsgCode::R_FOUND,
+     "The most right vertex in the left subtree has been found"},
+    {MsgCode::DO_REM, "Remove will be executed"},
+    {MsgCode::DONT_REM, "Remove won't be executed: vertex hasn't found"},
+    {MsgCode::INS_DONE, "Insertion has been done"},
+    {MsgCode::NEW_ROOT, "There is a new root"},
+    {MsgCode::MERGE_EQUAL,
+     "ID of the left tree must be != ID of the right one"},
+    {MsgCode::MERGE_EMPTY, "Both trees must not be empty"},
+    {MsgCode::MERGE_END, "Merge has been executed. The new root is "}};
+
 namespace detail {
 
 class CustomPanner : public QwtPlotPanner {
@@ -134,7 +169,7 @@ private:
   void UpdIndex(QComboBox *ptr, const QString &str);
   void UpdateComboBox();
 
-  void SetStatus(const char *msg);
+  void SetStatus(MsgCode code);
   void Prepare();
 
   void Draw();
@@ -163,6 +198,7 @@ private:
   bool merge_executing_ = {};
   int x_ = {};
   int y_ = {};
+  int next_id_ = 1;
 
   std::unique_ptr<IObserver> port_in_;
   std::unique_ptr<IObservable> port_out_;
@@ -294,15 +330,14 @@ template <typename T> void View<T>::ConfigureWidgets() {
 
 template <typename T> void View<T>::SetCallback(IObservable *observable) {
   auto callback = [this](const std::any &msg) {
-    auto str_msg = std::any_cast<MsgType<T>>(msg).first;
+    auto msg_code = std::any_cast<MsgType<T>>(msg).first;
     trees_ = std::any_cast<MsgType<T>>(msg).second;
     this->UpdateComboBox();
-    this->SetStatus(str_msg);
+    this->SetStatus(msg_code);
     this->Prepare();
     this->Draw();
     if (!this->MW_->ui->animationOff->isChecked() &&
-        (std::strcmp(str_msg, StrMsg[MsgCode::SUCC_DEL]) != 0) &&
-        (std::strcmp(str_msg, StrMsg[MsgCode::UNSUCC_DEL]) != 0)) {
+        (msg_code != MsgCode::SUCC_DEL) && (msg_code != MsgCode::UNSUCC_DEL)) {
       this->Delay(this->MW_->ui->delayTime->value());
     }
   };
@@ -362,7 +397,17 @@ template <typename T> void View<T>::UpdateComboBox() {
   UpdIndex(righttreeId, merge2_str);
 }
 
-template <typename T> void View<T>::SetStatus(const char *msg) {
+template <typename T> void View<T>::SetStatus(MsgCode code) {
+  QString msg;
+  if (code == MsgCode::SPLIT_SUCC) {
+    msg = "The left tree ID is " + MW_->ui->maintreeId->currentText() +
+          ". The right is " + QString::number(next_id_);
+    ++next_id_;
+  } else if (code == MsgCode::MERGE_END) {
+    msg = StrMsg[MsgCode::MERGE_END] + MW_->ui->lefttreeId->currentText();
+  } else {
+    msg = StrMsg[code];
+  }
   MW_->ui->statusbar->showMessage(msg);
 }
 
