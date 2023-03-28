@@ -7,10 +7,6 @@
 
 namespace DSViz {
 
-constexpr const int kRadius = 6;
-constexpr const int kHorSpace = 2;
-constexpr const int kVerSpace = 2;
-
 template <typename T> struct VNode;
 
 template <typename T> using PVNode = VNode<T> *;
@@ -25,21 +21,45 @@ template <typename T> struct VNode {
 
 namespace detail {
 
-template <typename T> void UpdNode(PVNode<T> node) {
-  if (!node) {
+template <typename T> class ReadyTree {
+public:
+  ~ReadyTree();
+
+  void Fill(PNode<T> src, int x0 = 0, int y0 = 0);
+
+  PVNode<T> Get();
+
+  static constexpr const int kRadius = 6;
+  static constexpr const int kHorSpace = 2;
+  static constexpr const int kVerSpace = 2;
+
+private:
+  void FillY_Weight(PNode<T> src, PVNode<T> dst, int y);
+  void FillX(PVNode<T> dst, int x);
+  void UpdNode(PVNode<T> node);
+
+  void Destroy(PVNode<T> root);
+
+  PVNode<T> tree_ = nullptr;
+};
+
+template <typename T> ReadyTree<T>::~ReadyTree() { Destroy(tree_); }
+
+template <typename T> void ReadyTree<T>::Fill(PNode<T> src, int x0, int y0) {
+  Destroy(tree_);
+  if (!src) {
+    tree_ = nullptr;
     return;
   }
-  node->x_max = node->x;
-  node->x_min = node->x;
-  if (node->left) {
-    node->x_min = node->left->x_min;
-  }
-  if (node->right) {
-    node->x_max = node->right->x_max;
-  }
+  tree_ = new VNode<T>{};
+  FillY_Weight(src, tree_, y0);
+  FillX(tree_, x0);
 }
 
-template <typename T> void FillY_Weight(PNode<T> src, PVNode<T> dst, int y) {
+template <typename T> PVNode<T> ReadyTree<T>::Get() { return tree_; }
+
+template <typename T>
+void ReadyTree<T>::FillY_Weight(PNode<T> src, PVNode<T> dst, int y) {
   dst->node = src;
   dst->y = y;
   int lwidth = kRadius, rwidth = kRadius;
@@ -54,10 +74,10 @@ template <typename T> void FillY_Weight(PNode<T> src, PVNode<T> dst, int y) {
     rwidth = kHorSpace / 2 + dst->right->width;
   }
   dst->width = lwidth + rwidth;
-  detail::UpdNode(dst);
+  UpdNode(dst);
 }
 
-template <typename T> void FillX(PVNode<T> dst, int x) {
+template <typename T> void ReadyTree<T>::FillX(PVNode<T> dst, int x) {
   dst->x = x;
   int ll = x - dst->width / 2;
   int rr = x + dst->width / 2;
@@ -71,17 +91,29 @@ template <typename T> void FillX(PVNode<T> dst, int x) {
   }
 }
 
-} // namespace detail
-
-template <typename T> PVNode<T> Fill(PNode<T> src, int x0 = 0, int y0 = 0) {
-  if (!src) {
-    return nullptr;
+template <typename T> void ReadyTree<T>::UpdNode(PVNode<T> node) {
+  if (!node) {
+    return;
   }
-  PVNode<T> dst = new VNode<T>{};
-  detail::FillY_Weight(src, dst, y0);
-  detail::FillX(dst, x0);
-  return dst;
+  node->x_max = node->x;
+  node->x_min = node->x;
+  if (node->left) {
+    node->x_min = node->left->x_min;
+  }
+  if (node->right) {
+    node->x_max = node->right->x_max;
+  }
 }
+
+template <typename T> void ReadyTree<T>::Destroy(PVNode<T> root) {
+  if (!root) {
+    return;
+  }
+  Destroy(root->left);
+  Destroy(root->right);
+  delete root;
+}
+} // namespace detail
 
 } // namespace DSViz
 #endif // VNODE_H

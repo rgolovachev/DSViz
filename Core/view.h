@@ -109,38 +109,6 @@ public slots:
   virtual void OnChoiceChange(QString num) = 0;
 };
 
-template <typename T> class ReadyTree {
-public:
-  ~ReadyTree();
-
-  void Set(PVNode<T> root);
-
-  PVNode<T> Get();
-
-private:
-  void Destroy(PVNode<T> root);
-
-  PVNode<T> tree_ = {};
-};
-
-template <typename T> ReadyTree<T>::~ReadyTree() { Destroy(tree_); }
-
-template <typename T> void ReadyTree<T>::Set(PVNode<T> root) {
-  Destroy(tree_);
-  tree_ = root;
-}
-
-template <typename T> PVNode<T> ReadyTree<T>::Get() { return tree_; }
-
-template <typename T> void ReadyTree<T>::Destroy(PVNode<T> root) {
-  if (!root) {
-    return;
-  }
-  Destroy(root->left);
-  Destroy(root->right);
-  delete root;
-}
-
 } // namespace detail
 
 template <typename T> class View : public detail::BaseView {
@@ -413,9 +381,9 @@ template <typename T> void View<T>::SetStatus(MsgCode code) {
 
 template <typename T> void View<T>::Prepare() {
   if (!merge_executing_) {
-    cur_tree_.Set(Fill(trees_[MW_->ui->maintreeId->currentText().toInt()]));
+    cur_tree_.Fill(trees_[MW_->ui->maintreeId->currentText().toInt()]);
   } else {
-    cur_tree_.Set(Fill(trees_[MW_->ui->lefttreeId->currentText().toInt()]));
+    cur_tree_.Fill(trees_[MW_->ui->lefttreeId->currentText().toInt()]);
   }
 }
 
@@ -521,7 +489,7 @@ template <typename T> QColor View<T>::GetColor(State state) {
 
 template <typename T> QwtSymbol *View<T>::GetSymbol(PVNode<T> vnode) {
   QwtSymbol *sym = new QwtSymbol{QwtSymbol::Style::Ellipse};
-  int diam = kRadius * 2;
+  int diam = ReadyTree::kRadius * 2;
   sym->setSize((diam * 4) * scale_, (diam * 4) * scale_);
   if (!MW_->ui->animationOff->isChecked()) {
     sym->setColor(GetColor(vnode->node->state));
