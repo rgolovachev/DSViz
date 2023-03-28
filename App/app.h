@@ -11,7 +11,7 @@ public:
   App() : view_{model_.GetPort()}, controller_{view_.GetPort(), &model_} {}
 
 private:
-  // эти поля весят <= 200 байт, мне кажется это приемлемо
+  // я верю что это влезет на стек
   Model<T> model_ = {};
   View<T> view_;
   Controller<T> controller_;

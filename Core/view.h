@@ -26,15 +26,6 @@
 
 namespace DSViz {
 
-constexpr const char *kFont = "Monaco";
-constexpr const char *kErrMsg = "Номер дерева и/или вершины - не число";
-constexpr const int kFontSz = 18;
-constexpr const int kLegSz = 10;
-constexpr const int kBound = 40;
-constexpr const double kSliderBegin = 1.0;
-constexpr const double kSliderLowerBound = 0.2;
-constexpr const double kSliderUpperBound = 2.0;
-
 inline std::map<State, QColor> StateToClr = {
     {State::ON_PATH, QColor::fromRgb(255, 255, 102)},
     {State::FOUND, QColor::fromRgb(0, 153, 0)},
@@ -125,6 +116,16 @@ public:
   void OnButtonClick() override;
   void OnZoom(double value) override;
   void OnChoiceChange(QString num) override;
+
+  static constexpr const char *kFont = "Monaco";
+  static constexpr const char *kErrMsg =
+      "Номер дерева и/или вершины - не число";
+  static constexpr const int kFontSz = 18;
+  static constexpr const int kLegSz = 10;
+  static constexpr const int kBound = 40;
+  static constexpr const double kSliderBegin = 1.0;
+  static constexpr const double kSliderLowerBound = 0.2;
+  static constexpr const double kSliderUpperBound = 2.0;
 
 private:
   void ConnectWidgets();

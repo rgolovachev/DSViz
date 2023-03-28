@@ -28,17 +28,17 @@ public:
   void DeleteTree(const ArgsType &args);
 
 private:
-  void SetCallback(IObservable *observable);
+  void HandleMsg(const UserQuery<T> &data);
+  auto GetCallback();
 
-  std::unique_ptr<IObserver> port_in_;
   Model<T> *model_ptr_;
+  std::unique_ptr<IObserver> port_in_;
 };
 
 template <typename T>
 Controller<T>::Controller(IObservable *observable, Model<T> *model)
-    : model_ptr_{model} {
-  SetCallback(observable);
-}
+    : model_ptr_{model}, port_in_{std::make_unique<Observer>(observable,
+                                                             GetCallback())} {}
 
 template <typename T> void Controller<T>::Insert(const ArgsType &args) {
   model_ptr_->Insert(args.first, args.second);
@@ -64,24 +64,35 @@ template <typename T> void Controller<T>::DeleteTree(const ArgsType &args) {
   model_ptr_->DeleteTree(args.first);
 }
 
-template <typename T> void Controller<T>::SetCallback(IObservable *observable) {
-  auto lambda = [this](const std::any &msg_) {
-    UserQuery<T> msg = std::any_cast<UserQuery<T>>(msg_);
-    if (msg.type == QueryType::INSERT) {
-      this->Insert(msg.args);
-    } else if (msg.type == QueryType::REMOVE) {
-      this->Remove(msg.args);
-    } else if (msg.type == QueryType::FIND) {
-      this->Find(msg.args);
-    } else if (msg.type == QueryType::SPLIT) {
-      this->Split(msg.args);
-    } else if (msg.type == QueryType::MERGE) {
-      this->Merge(msg.args);
-    } else if (msg.type == QueryType::DELTREE) {
-      this->DeleteTree(msg.args);
-    }
+template <typename T> void Controller<T>::HandleMsg(const UserQuery<T> &data) {
+  switch (data.type) {
+  case QueryType::INSERT:
+    Insert(data.args);
+    break;
+  case QueryType::REMOVE:
+    Remove(data.args);
+    break;
+  case QueryType::FIND:
+    Find(data.args);
+    break;
+  case QueryType::SPLIT:
+    Split(data.args);
+    break;
+  case QueryType::MERGE:
+    Merge(data.args);
+    break;
+  case QueryType::DELTREE:
+    DeleteTree(data.args);
+    break;
+  default:
+    break;
+  }
+}
+
+template <typename T> auto Controller<T>::GetCallback() {
+  return [this](const std::any &msg) {
+    HandleMsg(std::any_cast<UserQuery<T>>(msg));
   };
-  port_in_ = std::move(std::make_unique<Observer>(observable, lambda));
 }
 
 } // namespace DSViz
