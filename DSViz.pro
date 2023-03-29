@@ -27,6 +27,7 @@ QMAKE_CXXFLAGS += -fno-exceptions
 
 SOURCES += \
     Core/model.cpp \
+    Core/vnode.cpp \
     main.cpp \
     App/mainwindow.cpp \
     Observer/observer.cpp \

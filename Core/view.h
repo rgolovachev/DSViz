@@ -126,7 +126,7 @@ public slots:
 } // namespace detail
 
 template <typename T> class View : public detail::BaseView {
-  using ReadyTree = detail::ReadyTree<T>;
+  using ReadyTree = detail::ReadyTree;
   using CustomPanner = detail::CustomPanner;
   using Palette = detail::Palette;
   using Text = detail::Text;
