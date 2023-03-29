@@ -13,7 +13,7 @@ template <typename T> class Controller {
   using ArgsType = std::pair<int, T>;
 
 public:
-  Controller(IObservable *observable, Model<T> *model);
+  Controller(IObservable *observable, Model *model);
 
   void Insert(const ArgsType &args);
 
@@ -31,12 +31,12 @@ private:
   void HandleMsg(const UserQuery<T> &data);
   auto GetCallback();
 
-  Model<T> *model_ptr_;
+  Model *model_ptr_;
   std::unique_ptr<IObserver> port_in_;
 };
 
 template <typename T>
-Controller<T>::Controller(IObservable *observable, Model<T> *model)
+Controller<T>::Controller(IObservable *observable, Model *model)
     : model_ptr_{model}, port_in_{std::make_unique<Observer>(observable,
                                                              GetCallback())} {}
 
