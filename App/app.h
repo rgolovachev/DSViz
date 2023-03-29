@@ -6,7 +6,7 @@
 
 namespace DSViz {
 
-template <typename T> class App {
+class App {
 public:
   App() : view_{model_.GetPort()}, controller_{view_.GetPort(), &model_} {}
 
@@ -14,7 +14,7 @@ private:
   // я верю что это влезет на стек
   Model model_ = {};
   View view_;
-  Controller<T> controller_;
+  Controller controller_;
 };
 
 } // namespace DSViz

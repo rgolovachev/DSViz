@@ -3,6 +3,6 @@
 
 int main(int argc, char *argv[]) {
   QApplication qapp(argc, argv);
-  DSViz::App<int> app{};
+  DSViz::App app{};
   return qapp.exec();
 }
