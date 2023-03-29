@@ -93,7 +93,7 @@ private:
   static PNode make_hidden_root(PNode ltree, PNode rtree);
 
   Trees data_ = {};
-  std::unique_ptr<Observable> port_out_;
+  Observable port_out_ = {};
   int next_id_ = {};
 };
 

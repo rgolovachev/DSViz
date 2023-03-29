@@ -126,22 +126,36 @@ bool CustomPanner::eventFilter(QObject *object, QEvent *event) {
 
 } // namespace detail
 
+// высунул вперед, т.к. компилятор должен смочь вывести тип в auto
+auto View::GetCallback() {
+  return [this](const std::any &msg) {
+    auto msg_code = std::any_cast<MsgType<int>>(msg).first;
+    trees_ = std::any_cast<MsgType<int>>(msg).second;
+    this->UpdateComboBox();
+    this->SetStatus(msg_code);
+    this->Prepare();
+    this->Draw();
+    if (DoDelay(msg_code)) {
+      this->Delay(this->MW_->ui->delayTime->value());
+    }
+  };
+}
+
 View::View()
     : MW_{std::make_unique<MainWindow>()},
       panner_{std::make_unique<CustomPanner>(MW_->ui->qwt_plot->canvas())},
-      port_out_{std::make_unique<Observable>()} {
+      port_in_{GetCallback()} {
   ConnectWidgets();
   ConfigureWidgets();
-  SetCallback();
   MW_->show();
   // как и в конструкторе model, оно только запишет во внутренние поля
   // Observable это и не будет отправлять потому что еще никто не подписан
-  port_out_->Set(UserQuery<int>{QueryType::DO_NOTHING, {0, 0}});
+  port_out_.Set(UserQuery<int>{QueryType::DO_NOTHING, {0, 0}});
 }
 
-Observable *View::GetPortOut() { return port_out_.get(); }
+Observable *View::GetPortOut() { return &port_out_; }
 
-Observer *View::GetPortIn() { return port_in_.get(); }
+Observer *View::GetPortIn() { return &port_in_; }
 
 void View::OnPanned(int dx, int dy) {
   x_ += dx;
@@ -168,7 +182,7 @@ void View::OnButtonClick() {
     merge_executing_ = true;
     int left_id = MW_->ui->lefttreeId->currentText().toInt(),
         right_id = MW_->ui->righttreeId->currentText().toInt();
-    port_out_->Set(UserQuery<int>{QueryType::MERGE, {left_id, right_id}});
+    port_out_.Set(UserQuery<int>{QueryType::MERGE, {left_id, right_id}});
     merge_executing_ = false;
     SetEnabledWidgets(true);
     MW_->ui->maintreeId->setCurrentText(MW_->ui->lefttreeId->currentText());
@@ -180,18 +194,18 @@ void View::OnButtonClick() {
   int ver = MW_->ui->vertexId->text().toInt(&ver_correct);
 
   if (id_correct && (sender() == MW_->ui->deltreeButton)) {
-    port_out_->Set(UserQuery<int>{QueryType::DELTREE, {id, 0}});
+    port_out_.Set(UserQuery<int>{QueryType::DELTREE, {id, 0}});
 
   } else if (id_correct && ver_correct) {
     SetEnabledWidgets(false);
     if (sender() == MW_->ui->insertButton) {
-      port_out_->Set(UserQuery<int>{QueryType::INSERT, {id, ver}});
+      port_out_.Set(UserQuery<int>{QueryType::INSERT, {id, ver}});
     } else if (sender() == MW_->ui->removeButton) {
-      port_out_->Set(UserQuery<int>{QueryType::REMOVE, {id, ver}});
+      port_out_.Set(UserQuery<int>{QueryType::REMOVE, {id, ver}});
     } else if (sender() == MW_->ui->findButton) {
-      port_out_->Set(UserQuery<int>{QueryType::FIND, {id, ver}});
+      port_out_.Set(UserQuery<int>{QueryType::FIND, {id, ver}});
     } else if (sender() == MW_->ui->splitButton) {
-      port_out_->Set(UserQuery<int>{QueryType::SPLIT, {id, ver}});
+      port_out_.Set(UserQuery<int>{QueryType::SPLIT, {id, ver}});
     }
     SetEnabledWidgets(true);
   } else {
@@ -254,21 +268,6 @@ bool View::DoDelay(MsgCode code) {
     return true;
   }
   return false;
-}
-
-void View::SetCallback() {
-  auto callback = [this](const std::any &msg) {
-    auto msg_code = std::any_cast<MsgType<int>>(msg).first;
-    trees_ = std::any_cast<MsgType<int>>(msg).second;
-    this->UpdateComboBox();
-    this->SetStatus(msg_code);
-    this->Prepare();
-    this->Draw();
-    if (DoDelay(msg_code)) {
-      this->Delay(this->MW_->ui->delayTime->value());
-    }
-  };
-  port_in_ = std::move(std::make_unique<Observer>(callback));
 }
 
 void View::UpdateComboBox() {

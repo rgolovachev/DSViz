@@ -151,7 +151,7 @@ private:
   void ConnectWidgets();
   void ConfigureWidgets();
   bool DoDelay(MsgCode code);
-  void SetCallback();
+  auto GetCallback();
 
   void UpdateComboBox();
 
@@ -183,8 +183,8 @@ private:
   int y_ = {};
   int next_id_ = 1;
 
-  std::unique_ptr<Observer> port_in_;
-  std::unique_ptr<Observable> port_out_;
+  Observer port_in_;
+  Observable port_out_;
 };
 
 } // namespace DSViz

@@ -10,9 +10,9 @@ auto Controller::GetCallback() {
 }
 
 Controller::Controller(Model *model)
-    : model_ptr_{model}, port_in_{std::make_unique<Observer>(GetCallback())} {}
+    : model_ptr_{model}, port_in_{GetCallback()} {}
 
-Observer *Controller::GetPortIn() { return port_in_.get(); }
+Observer *Controller::GetPortIn() { return &port_in_; }
 
 void Controller::Insert(const ArgsType &args) {
   model_ptr_->Insert(args.first, args.second);

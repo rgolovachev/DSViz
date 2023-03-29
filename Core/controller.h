@@ -35,7 +35,7 @@ private:
   auto GetCallback();
 
   Model *model_ptr_;
-  std::unique_ptr<Observer> port_in_;
+  Observer port_in_;
 };
 
 } // namespace DSViz
