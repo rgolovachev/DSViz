@@ -128,12 +128,6 @@ public:
 
   IObservable *GetPort();
 
-  void OnPanned(int dx, int dy);
-  void OnPauseOrStop();
-  void OnButtonClick();
-  void OnZoom(double value);
-  void OnChoiceChange(QString num);
-
   static constexpr const char *kFont = "Monaco";
   static constexpr const char *kErrMsg =
       "Номер дерева и/или вершины - не число";
@@ -143,6 +137,13 @@ public:
   static constexpr const double kSliderBegin = 1.0;
   static constexpr const double kSliderLowerBound = 0.2;
   static constexpr const double kSliderUpperBound = 2.0;
+
+public slots:
+  void OnPanned(int dx, int dy);
+  void OnPauseOrStop();
+  void OnButtonClick();
+  void OnZoom(double value);
+  void OnChoiceChange(QString num);
 
 private:
   void ConnectWidgets();

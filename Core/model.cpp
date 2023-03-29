@@ -26,10 +26,7 @@ void Trees::Erase(int id) {
 
 size_t Trees::Size() { return trees_.size(); }
 
-PNode<int> &Trees::operator[](int key) {
-  assert(trees_.find(key) != trees_.end());
-  return trees_[key];
-}
+PNode<int> &Trees::operator[](int key) { return trees_.at(key); }
 
 BareTrees<int> Trees::Get() { return trees_; }
 
