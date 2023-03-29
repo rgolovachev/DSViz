@@ -60,7 +60,7 @@ public:
 
   void DeleteTree(int id);
 
-  IObservable *GetPort();
+  Observable *GetPortOut();
 
 private:
   void update(PNode v);
@@ -93,7 +93,7 @@ private:
   static PNode make_hidden_root(PNode ltree, PNode rtree);
 
   Trees data_ = {};
-  std::unique_ptr<IObservable> port_out_;
+  std::unique_ptr<Observable> port_out_;
   int next_id_ = {};
 };
 

@@ -100,7 +100,8 @@ private:
       {MsgCode::MERGE_EQUAL,
        "ID of the left tree must be != ID of the right one"},
       {MsgCode::MERGE_EMPTY, "Both trees must not be empty"},
-      {MsgCode::MERGE_END, "Merge has been executed. The new root is "}};
+      {MsgCode::MERGE_END, "Merge has been executed. The new root is "},
+      {MsgCode::EMPTY_MSG, ""}};
 };
 
 class CustomPanner : public QwtPlotPanner {
@@ -124,9 +125,10 @@ class View : public QObject {
   using PNode = PNode<int>;
 
 public:
-  View(IObservable *observable);
+  View();
 
-  IObservable *GetPort();
+  Observable *GetPortOut();
+  Observer *GetPortIn();
 
   static constexpr const char *kFont = "Monaco";
   static constexpr const char *kErrMsg =
@@ -148,7 +150,8 @@ public slots:
 private:
   void ConnectWidgets();
   void ConfigureWidgets();
-  void SetCallback(IObservable *observable);
+  bool DoDelay(MsgCode code);
+  void SetCallback();
 
   void UpdateComboBox();
 
@@ -180,8 +183,8 @@ private:
   int y_ = {};
   int next_id_ = 1;
 
-  std::unique_ptr<IObserver> port_in_;
-  std::unique_ptr<IObservable> port_out_;
+  std::unique_ptr<Observer> port_in_;
+  std::unique_ptr<Observable> port_out_;
 };
 
 } // namespace DSViz

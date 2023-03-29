@@ -14,7 +14,9 @@ class Controller {
   using UserQuery = UserQuery<int>;
 
 public:
-  Controller(IObservable *observable, Model *model);
+  Controller(Model *model);
+
+  Observer *GetPortIn();
 
   void Insert(const ArgsType &args);
 
@@ -33,7 +35,7 @@ private:
   auto GetCallback();
 
   Model *model_ptr_;
-  std::unique_ptr<IObserver> port_in_;
+  std::unique_ptr<Observer> port_in_;
 };
 
 } // namespace DSViz

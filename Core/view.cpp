@@ -126,17 +126,22 @@ bool CustomPanner::eventFilter(QObject *object, QEvent *event) {
 
 } // namespace detail
 
-View::View(IObservable *observable)
+View::View()
     : MW_{std::make_unique<MainWindow>()},
       panner_{std::make_unique<CustomPanner>(MW_->ui->qwt_plot->canvas())},
       port_out_{std::make_unique<Observable>()} {
   ConnectWidgets();
   ConfigureWidgets();
-  SetCallback(observable);
+  SetCallback();
   MW_->show();
+  // как и в конструкторе model, оно только запишет во внутренние поля
+  // Observable это и не будет отправлять потому что еще никто не подписан
+  port_out_->Set(UserQuery<int>{QueryType::DO_NOTHING, {0, 0}});
 }
 
-IObservable *View::GetPort() { return port_out_.get(); }
+Observable *View::GetPortOut() { return port_out_.get(); }
+
+Observer *View::GetPortIn() { return port_in_.get(); }
 
 void View::OnPanned(int dx, int dy) {
   x_ += dx;
@@ -236,9 +241,6 @@ void View::ConfigureWidgets() {
   MW_->ui->qwt_plot->setCanvasBackground(Qt::white);
   MW_->ui->qwt_plot->setAxisScale(QwtPlot::xBottom, -kBound, kBound);
   MW_->ui->qwt_plot->setAxisScale(QwtPlot::yLeft, -kBound, kBound);
-  MW_->ui->maintreeId->addItem("0");
-  MW_->ui->lefttreeId->addItem("0");
-  MW_->ui->righttreeId->addItem("0");
   MW_->ui->qwt_plot->enableAxis(0, false);
   MW_->ui->qwt_plot->enableAxis(2, false);
   MW_->ui->qwt_slider->setValue(kSliderBegin);
@@ -246,7 +248,15 @@ void View::ConfigureWidgets() {
   panner_->setMouseButton(Qt::LeftButton);
 }
 
-void View::SetCallback(IObservable *observable) {
+bool View::DoDelay(MsgCode code) {
+  if (!MW_->ui->animationOff->isChecked() && (code != MsgCode::SUCC_DEL) &&
+      (code != MsgCode::UNSUCC_DEL) && (code != MsgCode::EMPTY_MSG)) {
+    return true;
+  }
+  return false;
+}
+
+void View::SetCallback() {
   auto callback = [this](const std::any &msg) {
     auto msg_code = std::any_cast<MsgType<int>>(msg).first;
     trees_ = std::any_cast<MsgType<int>>(msg).second;
@@ -254,12 +264,11 @@ void View::SetCallback(IObservable *observable) {
     this->SetStatus(msg_code);
     this->Prepare();
     this->Draw();
-    if (!this->MW_->ui->animationOff->isChecked() &&
-        (msg_code != MsgCode::SUCC_DEL) && (msg_code != MsgCode::UNSUCC_DEL)) {
+    if (DoDelay(msg_code)) {
       this->Delay(this->MW_->ui->delayTime->value());
     }
   };
-  port_in_ = std::move(std::make_unique<Observer>(observable, callback));
+  port_in_ = std::move(std::make_unique<Observer>(callback));
 }
 
 void View::UpdateComboBox() {

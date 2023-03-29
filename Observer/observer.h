@@ -6,55 +6,42 @@
 
 namespace DSViz {
 
-class IObserver {
-public:
-  virtual ~IObserver() = default;
-  virtual void OnNotify(const std::any &data) = 0;
-  virtual void Unsubscribe() = 0;
-};
+class Observer;
 
-class IObservable {
-public:
-  virtual ~IObservable() = default;
-  virtual void Subscribe(IObserver *observer) = 0;
-  virtual void Detach(IObserver *observer) = 0;
-  virtual void Notify() = 0;
-  virtual void Set(const std::any &msg) = 0;
-};
-
-class Observable : public IObservable {
+class Observable {
 public:
   Observable() = default;
 
-  ~Observable() override;
+  ~Observable();
 
-  void Subscribe(IObserver *observer) override;
+  void Subscribe(Observer *observer);
 
-  void Detach(IObserver *observer) override;
+  void Detach(Observer *observer);
 
-  void Notify() override;
+  void Notify();
 
-  void Set(const std::any &msg) override;
+  void Set(const std::any &msg);
 
 private:
-  std::list<IObserver *> list_observer_;
+  std::list<Observer *> list_observer_;
   std::any msg_;
 };
 
-class Observer : public IObserver {
+class Observer {
+  using LambdaType = std::function<void(const std::any &)>;
+
 public:
-  Observer(IObservable *observable, std::function<void(const std::any &)> lmbd);
+  Observer(LambdaType lmbd);
 
-  ~Observer() override;
+  ~Observer();
 
-  void OnNotify(const std::any &msg) override;
+  void OnNotify(const std::any &msg);
 
-  void Unsubscribe() override;
+  void Unsubscribe(bool do_detach = true);
 
 private:
-  std::any msg_;
-  IObservable *observable_;
-  std::function<void(const std::any &)> lmbd_;
+  Observable *observable_;
+  LambdaType lmbd_;
 };
 
 } // namespace DSViz

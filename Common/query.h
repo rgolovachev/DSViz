@@ -4,7 +4,15 @@
 
 namespace DSViz {
 
-enum class QueryType { INSERT, REMOVE, FIND, SPLIT, MERGE, DELTREE };
+enum class QueryType {
+  INSERT,
+  REMOVE,
+  FIND,
+  SPLIT,
+  MERGE,
+  DELTREE,
+  DO_NOTHING
+};
 
 template <typename T> struct UserQuery {
   QueryType type;

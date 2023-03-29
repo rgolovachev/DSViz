@@ -8,12 +8,14 @@ namespace DSViz {
 
 class App {
 public:
-  App() : view_{model_.GetPort()}, controller_{view_.GetPort(), &model_} {}
+  App();
 
 private:
+  void ConnectPorts();
+
   // я верю что это влезет на стек
   Model model_ = {};
-  View view_;
+  View view_ = {};
   Controller controller_;
 };
 

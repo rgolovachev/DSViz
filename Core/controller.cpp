@@ -9,9 +9,10 @@ auto Controller::GetCallback() {
       [this](const std::any &msg) { HandleMsg(std::any_cast<UserQuery>(msg)); };
 }
 
-Controller::Controller(IObservable *observable, Model *model)
-    : model_ptr_{model}, port_in_{std::make_unique<Observer>(observable,
-                                                             GetCallback())} {}
+Controller::Controller(Model *model)
+    : model_ptr_{model}, port_in_{std::make_unique<Observer>(GetCallback())} {}
+
+Observer *Controller::GetPortIn() { return port_in_.get(); }
 
 void Controller::Insert(const ArgsType &args) {
   model_ptr_->Insert(args.first, args.second);

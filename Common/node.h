@@ -36,7 +36,8 @@ enum class MsgCode {
   MERGE_EQUAL,
   MERGE_EMPTY,
   MERGE_END,
-  SPLIT_SUCC
+  SPLIT_SUCC,
+  EMPTY_MSG
 };
 
 enum class State {

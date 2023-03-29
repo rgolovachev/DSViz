@@ -43,6 +43,9 @@ void Trees::destroy(PNode<int> root) {
 
 Model::Model() : port_out_{std::make_unique<Observable>()} {
   data_.Insert({next_id_++, nullptr});
+  // пока еще никто на модель здесь не подписан, так что я просто изменю поле
+  // msg_ в Observable
+  port_out_->Set(std::make_pair(MsgCode::EMPTY_MSG, data_.Get()));
 }
 
 void Model::Insert(int id, int key) {
@@ -147,7 +150,7 @@ void Model::DeleteTree(int id) {
   port_out_->Set(std::make_pair(MsgCode::SUCC_DEL, data_.Get()));
 }
 
-IObservable *Model::GetPort() { return port_out_.get(); }
+Observable *Model::GetPortOut() { return port_out_.get(); }
 
 void Model::update(PNode v) {
   if (!v) {
