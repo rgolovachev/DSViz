@@ -111,21 +111,11 @@ public:
   virtual bool eventFilter(QObject *object, QEvent *event);
 };
 
-// такой танец с бубном нужен потому что я не могу создать шаблонный класс и там
-// определить макрос Q_OBJECT
-class BaseView : public QObject {
-  Q_OBJECT
-public slots:
-  virtual void OnPauseOrStop() = 0;
-  virtual void OnButtonClick() = 0;
-  virtual void OnZoom(double value) = 0;
-  virtual void OnPanned(int dx, int dy) = 0;
-  virtual void OnChoiceChange(QString num) = 0;
-};
-
 } // namespace detail
 
-class View : public detail::BaseView {
+class View : public QObject {
+  Q_OBJECT
+
   using ReadyTree = detail::ReadyTree;
   using CustomPanner = detail::CustomPanner;
   using Palette = detail::Palette;
@@ -138,11 +128,11 @@ public:
 
   IObservable *GetPort();
 
-  void OnPanned(int dx, int dy) override;
-  void OnPauseOrStop() override;
-  void OnButtonClick() override;
-  void OnZoom(double value) override;
-  void OnChoiceChange(QString num) override;
+  void OnPanned(int dx, int dy);
+  void OnPauseOrStop();
+  void OnButtonClick();
+  void OnZoom(double value);
+  void OnChoiceChange(QString num);
 
   static constexpr const char *kFont = "Monaco";
   static constexpr const char *kErrMsg =
