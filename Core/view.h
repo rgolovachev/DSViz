@@ -26,59 +26,82 @@
 
 namespace DSViz {
 
-inline std::map<State, QColor> StateToClr = {
-    {State::ON_PATH, QColor::fromRgb(255, 255, 102)},
-    {State::FOUND, QColor::fromRgb(0, 153, 0)},
-    {State::NOT_FOUND, QColor::fromRgb(204, 0, 0)},
-    {State::X_VERTEX, QColor::fromRgb(179, 0, 179)},
-    {State::P_VERTEX, QColor::fromRgb(255, 26, 255)},
-    {State::G_VERTEX, QColor::fromRgb(255, 153, 255)},
-    {State::A_SUBTREE, QColor::fromRgb(255, 179, 102)},
-    {State::B_SUBTREE, QColor::fromRgb(102, 255, 140)},
-    {State::C_SUBTREE, QColor::fromRgb(102, 140, 255)},
-    {State::D_SUBTREE, QColor::fromRgb(255, 102, 102)},
-    {State::SPLAY_VER, QColor::fromRgb(204, 0, 153)},
-    {State::DONT_REM, QColor::fromRgb(255, 0, 0)},
-    {State::DO_REMOVE, QColor::fromRgb(0, 255, 0)},
-    {State::INSERTED, QColor::fromRgb(0, 255, 255)},
-    {State::NEW_ROOT, QColor::fromRgb(255, 215, 0)}};
-
-inline std::map<MsgCode, const char *> StrMsg = {
-    {MsgCode::OK, "OK"},
-    {MsgCode::WRONG_ID, "ERROR: There is no tree with this ID"},
-    {MsgCode::INSERT_ERR, "ERROR: This key already exists in the tree"},
-    {MsgCode::REMOVE_ERR, "ERROR: This key doesn't exist in the tree"},
-    {MsgCode::MERGE_ERR,
-     "ERROR: The maximum value of the first tree must be lower "
-     "than the minimum value of the second one"},
-    {MsgCode::SPLIT_ERR, "The target tree is empty"},
-    {MsgCode::SEARCH, "Program is searching for vertex"},
-    {MsgCode::NOT_FOUND, "The value hasn't found"},
-    {MsgCode::FOUND, "The value has found"},
-    {MsgCode::UNSUCC_DEL, "You must leave at least one tree"},
-    {MsgCode::SUCC_DEL, "The tree was deleted successfuly"},
-    {MsgCode::SPLIT_PERF, "Split is performing"},
-    {MsgCode::SPLAY_PERF, "Splay is performing"},
-    {MsgCode::ZIG_PERF, "Zig is performing"},
-    {MsgCode::ZIG_END, "Zig has been executed"},
-    {MsgCode::ZIGZAG_PERF, "Zig-zag is performing"},
-    {MsgCode::ZIGZAG_END, "Zig-zag has been executed"},
-    {MsgCode::ZIGZIG_PERF, "Zig-zig is performing"},
-    {MsgCode::ZIGZIG_END, "Zig-zig has been executed"},
-    {MsgCode::MERGE_PERF, "Merge is performing"},
-    {MsgCode::R_SEARCH, "Search for the most right vertex..."},
-    {MsgCode::R_FOUND,
-     "The most right vertex in the left subtree has been found"},
-    {MsgCode::DO_REM, "Remove will be executed"},
-    {MsgCode::DONT_REM, "Remove won't be executed: vertex hasn't found"},
-    {MsgCode::INS_DONE, "Insertion has been done"},
-    {MsgCode::NEW_ROOT, "There is a new root"},
-    {MsgCode::MERGE_EQUAL,
-     "ID of the left tree must be != ID of the right one"},
-    {MsgCode::MERGE_EMPTY, "Both trees must not be empty"},
-    {MsgCode::MERGE_END, "Merge has been executed. The new root is "}};
-
 namespace detail {
+
+class Palette {
+public:
+  static QColor GetColor(State state);
+
+private:
+  // constexpr сделать не выйдет, у std::map нет constexpr конструктора
+  inline static const std::map<State, QColor> StateToClr = {
+      {State::ON_PATH, QColor::fromRgb(255, 255, 102)},
+      {State::FOUND, QColor::fromRgb(0, 153, 0)},
+      {State::NOT_FOUND, QColor::fromRgb(204, 0, 0)},
+      {State::X_VERTEX, QColor::fromRgb(179, 0, 179)},
+      {State::P_VERTEX, QColor::fromRgb(255, 26, 255)},
+      {State::G_VERTEX, QColor::fromRgb(255, 153, 255)},
+      {State::A_SUBTREE, QColor::fromRgb(255, 179, 102)},
+      {State::B_SUBTREE, QColor::fromRgb(102, 255, 140)},
+      {State::C_SUBTREE, QColor::fromRgb(102, 140, 255)},
+      {State::D_SUBTREE, QColor::fromRgb(255, 102, 102)},
+      {State::SPLAY_VER, QColor::fromRgb(204, 0, 153)},
+      {State::DONT_REM, QColor::fromRgb(255, 0, 0)},
+      {State::DO_REMOVE, QColor::fromRgb(0, 255, 0)},
+      {State::INSERTED, QColor::fromRgb(0, 255, 255)},
+      {State::NEW_ROOT, QColor::fromRgb(255, 215, 0)}};
+};
+
+class Text {
+public:
+  static std::string GetMsg(MsgCode code);
+
+  static QString GetText(QComboBox *ptr);
+
+  static void ClearBox(QComboBox *ptr);
+
+  static void InsertItem(QComboBox *ptr, int num);
+
+  static void UpdIndex(QComboBox *ptr, const QString &str);
+
+  static std::string LegendByState(State state);
+
+private:
+  inline static const std::map<MsgCode, const char *> StrMsg = {
+      {MsgCode::OK, "OK"},
+      {MsgCode::WRONG_ID, "ERROR: There is no tree with this ID"},
+      {MsgCode::INSERT_ERR, "ERROR: This key already exists in the tree"},
+      {MsgCode::REMOVE_ERR, "ERROR: This key doesn't exist in the tree"},
+      {MsgCode::MERGE_ERR,
+       "ERROR: The maximum value of the first tree must be lower "
+       "than the minimum value of the second one"},
+      {MsgCode::SPLIT_ERR, "The target tree is empty"},
+      {MsgCode::SEARCH, "Program is searching for vertex"},
+      {MsgCode::NOT_FOUND, "The value hasn't found"},
+      {MsgCode::FOUND, "The value has found"},
+      {MsgCode::UNSUCC_DEL, "You must leave at least one tree"},
+      {MsgCode::SUCC_DEL, "The tree was deleted successfuly"},
+      {MsgCode::SPLIT_PERF, "Split is performing"},
+      {MsgCode::SPLAY_PERF, "Splay is performing"},
+      {MsgCode::ZIG_PERF, "Zig is performing"},
+      {MsgCode::ZIG_END, "Zig has been executed"},
+      {MsgCode::ZIGZAG_PERF, "Zig-zag is performing"},
+      {MsgCode::ZIGZAG_END, "Zig-zag has been executed"},
+      {MsgCode::ZIGZIG_PERF, "Zig-zig is performing"},
+      {MsgCode::ZIGZIG_END, "Zig-zig has been executed"},
+      {MsgCode::MERGE_PERF, "Merge is performing"},
+      {MsgCode::R_SEARCH, "Search for the most right vertex..."},
+      {MsgCode::R_FOUND,
+       "The most right vertex in the left subtree has been found"},
+      {MsgCode::DO_REM, "Remove will be executed"},
+      {MsgCode::DONT_REM, "Remove won't be executed: vertex hasn't found"},
+      {MsgCode::INS_DONE, "Insertion has been done"},
+      {MsgCode::NEW_ROOT, "There is a new root"},
+      {MsgCode::MERGE_EQUAL,
+       "ID of the left tree must be != ID of the right one"},
+      {MsgCode::MERGE_EMPTY, "Both trees must not be empty"},
+      {MsgCode::MERGE_END, "Merge has been executed. The new root is "}};
+};
 
 class CustomPanner : public QwtPlotPanner {
 
@@ -105,6 +128,8 @@ public slots:
 template <typename T> class View : public detail::BaseView {
   using ReadyTree = detail::ReadyTree<T>;
   using CustomPanner = detail::CustomPanner;
+  using Palette = detail::Palette;
+  using Text = detail::Text;
 
 public:
   View(IObservable *observable);
@@ -132,10 +157,6 @@ private:
   void ConfigureWidgets();
   void SetCallback(IObservable *observable);
 
-  QString GetText(QComboBox *ptr);
-  void ClearBox(QComboBox *ptr);
-  void InsertItem(QComboBox *ptr, int num);
-  void UpdIndex(QComboBox *ptr, const QString &str);
   void UpdateComboBox();
 
   void SetStatus(MsgCode code);
@@ -147,9 +168,7 @@ private:
   void AddPoints(QPolygonF &points, PVNode<T> vnode);
   void AttachVertex(PVNode<T> vnode, QwtSymbol *sym);
 
-  QColor GetColor(State state);
   QwtSymbol *GetSymbol(PVNode<T> vnode);
-  std::string LegendByState(State state);
   void PushState(PVNode<T> vnode);
   bool IsSubtreeState(PNode<T> node);
   void Delay(double sWait);
@@ -313,71 +332,44 @@ template <typename T> void View<T>::SetCallback(IObservable *observable) {
   port_in_ = std::move(std::make_unique<Observer>(observable, callback));
 }
 
-template <typename T> QString View<T>::GetText(QComboBox *ptr) {
-  if (ptr) {
-    return ptr->currentText();
-  }
-  return "";
-}
-
-template <typename T> void View<T>::ClearBox(QComboBox *ptr) {
-  if (ptr) {
-    ptr->clear();
-  }
-}
-
-template <typename T> void View<T>::InsertItem(QComboBox *ptr, int num) {
-  if (ptr) {
-    ptr->addItem(std::to_string(num).c_str());
-  }
-}
-
-template <typename T>
-void View<T>::UpdIndex(QComboBox *ptr, const QString &str) {
-  int index = ptr->findText(str);
-  if (index != -1) {
-    ptr->setCurrentIndex(index);
-  } else {
-    ptr->setCurrentIndex(0);
-  }
-}
-
 template <typename T> void View<T>::UpdateComboBox() {
   QComboBox *maintreeId = MW_->ui->maintreeId,
             *lefttreeId = MW_->ui->lefttreeId,
             *righttreeId = MW_->ui->righttreeId;
   QObject::disconnect(maintreeId, SIGNAL(currentTextChanged(QString)), this,
                       SLOT(OnChoiceChange(QString)));
-  QString cur_str = GetText(maintreeId);
-  QString merge1_str = GetText(lefttreeId);
-  QString merge2_str = GetText(righttreeId);
-  ClearBox(maintreeId);
-  ClearBox(lefttreeId);
-  ClearBox(righttreeId);
+  QString cur_str = Text::GetText(maintreeId);
+  QString merge1_str = Text::GetText(lefttreeId);
+  QString merge2_str = Text::GetText(righttreeId);
+  Text::ClearBox(maintreeId);
+  Text::ClearBox(lefttreeId);
+  Text::ClearBox(righttreeId);
   for (auto &[num, tree] : trees_) {
-    InsertItem(maintreeId, num);
-    InsertItem(lefttreeId, num);
-    InsertItem(righttreeId, num);
+    Text::InsertItem(maintreeId, num);
+    Text::InsertItem(lefttreeId, num);
+    Text::InsertItem(righttreeId, num);
   }
   QObject::connect(MW_->ui->maintreeId, SIGNAL(currentTextChanged(QString)),
                    this, SLOT(OnChoiceChange(QString)));
-  UpdIndex(maintreeId, cur_str);
-  UpdIndex(lefttreeId, merge1_str);
-  UpdIndex(righttreeId, merge2_str);
+  Text::UpdIndex(maintreeId, cur_str);
+  Text::UpdIndex(lefttreeId, merge1_str);
+  Text::UpdIndex(righttreeId, merge2_str);
 }
 
 template <typename T> void View<T>::SetStatus(MsgCode code) {
-  QString msg;
+  std::string msg;
   if (code == MsgCode::SPLIT_SUCC) {
-    msg = "The left tree ID is " + MW_->ui->maintreeId->currentText() +
-          ". The right is " + QString::number(next_id_);
+    msg = "The left tree ID is " +
+          MW_->ui->maintreeId->currentText().toStdString() + ". The right is " +
+          QString::number(next_id_).toStdString();
     ++next_id_;
   } else if (code == MsgCode::MERGE_END) {
-    msg = StrMsg[MsgCode::MERGE_END] + MW_->ui->lefttreeId->currentText();
+    msg = Text::GetMsg(MsgCode::MERGE_END) +
+          MW_->ui->lefttreeId->currentText().toStdString();
   } else {
-    msg = StrMsg[code];
+    msg = Text::GetMsg(code);
   }
-  MW_->ui->statusbar->showMessage(msg);
+  MW_->ui->statusbar->showMessage(msg.c_str());
 }
 
 template <typename T> void View<T>::Prepare() {
@@ -474,18 +466,11 @@ void View<T>::AttachVertex(PVNode<T> vnode, QwtSymbol *sym) {
       vnode->node->state == State::P_VERTEX ||
       vnode->node->state == State::G_VERTEX) {
     num->setLegendIconSize(QSize(kLegSz, kLegSz));
-    num->setTitle(LegendByState(vnode->node->state).c_str());
+    num->setTitle(Text::LegendByState(vnode->node->state).c_str());
     num->setItemAttribute(QwtPlotItem::Legend, true);
   }
 
   num->attach(MW_->ui->qwt_plot);
-}
-
-template <typename T> QColor View<T>::GetColor(State state) {
-  if (StateToClr.find(state) != StateToClr.end()) {
-    return StateToClr[state];
-  }
-  return QColorConstants::Gray;
 }
 
 template <typename T> QwtSymbol *View<T>::GetSymbol(PVNode<T> vnode) {
@@ -493,42 +478,11 @@ template <typename T> QwtSymbol *View<T>::GetSymbol(PVNode<T> vnode) {
   int diam = ReadyTree::kRadius * 2;
   sym->setSize((diam * 4) * scale_, (diam * 4) * scale_);
   if (!MW_->ui->animationOff->isChecked()) {
-    sym->setColor(GetColor(vnode->node->state));
+    sym->setColor(Palette::GetColor(vnode->node->state));
   } else {
     sym->setColor(QColorConstants::Gray);
   }
   return sym;
-}
-
-template <typename T> std::string View<T>::LegendByState(State state) {
-  std::string str;
-  switch (state) {
-  case State::A_SUBTREE:
-    str = "A subtree";
-    break;
-  case State::B_SUBTREE:
-    str = "B subtree";
-    break;
-  case State::C_SUBTREE:
-    str = "C subtree";
-    break;
-  case State::D_SUBTREE:
-    str = "D subtree";
-    break;
-  case State::X_VERTEX:
-    str = "Vertex X";
-    break;
-  case State::P_VERTEX:
-    str = "Vertex P";
-    break;
-  case State::G_VERTEX:
-    str = "Vertex G";
-    break;
-  default:
-    str = "";
-    break;
-  }
-  return str;
 }
 
 // пропихиваем state в ребенка чтобы закрасить все поддерево одним цветом
