@@ -13,7 +13,7 @@ public:
 private:
   // я верю что это влезет на стек
   Model model_ = {};
-  View<T> view_;
+  View view_;
   Controller<T> controller_;
 };
 
