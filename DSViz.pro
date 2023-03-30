@@ -15,11 +15,17 @@ CONFIG += qwt
 
 # решил забить на исключения, qwt вроде не должна их бросать
 # (сделал grep по слову throw в папке src и не нашел ничего)
-QMAKE_CXXFLAGS += -fno-exceptions
+# надеюсь правильно компиляторы проверяю
 
-# с ходу не нашел как проверять версию компилятора в qmake
-# вроде перф сильно не просел после того как я закомментил строчку
-#QMAKE_CXXFLAGS += -O3
+win32-msvc*|win64-msvc* {
+    QMAKE_CXXFLAGS += /EHsc
+    QMAKE_CXXFLAGS += /O2
+}
+
+*-g++|*-clang++ {
+    QMAKE_CXXFLAGS += -fno-exceptions
+    QMAKE_CXXFLAGS += -O3
+}
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
