@@ -44,6 +44,7 @@ private:
 class Model {
   using Trees = detail::Trees;
   using PNode = PNode<int>;
+  using MsgType = MsgType<int>;
 
 public:
   Model();
@@ -60,7 +61,7 @@ public:
 
   void DeleteTree(int id);
 
-  Observable *GetPortOut();
+  Observable<MsgType> *GetPortOut();
 
 private:
   void update(PNode v);
@@ -93,7 +94,7 @@ private:
   static PNode make_hidden_root(PNode ltree, PNode rtree);
 
   Trees data_ = {};
-  Observable port_out_ = {};
+  Observable<MsgType> port_out_ = {};
   int next_id_ = {};
 };
 

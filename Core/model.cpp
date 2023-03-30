@@ -150,7 +150,7 @@ void Model::DeleteTree(int id) {
   port_out_.Set(std::make_pair(MsgCode::SUCC_DEL, data_.Get()));
 }
 
-Observable *Model::GetPortOut() { return &port_out_; }
+Observable<Model::MsgType> *Model::GetPortOut() { return &port_out_; }
 
 void Model::update(PNode v) {
   if (!v) {

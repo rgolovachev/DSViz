@@ -16,7 +16,7 @@ class Controller {
 public:
   Controller(Model *model);
 
-  Observer *GetPortIn();
+  Observer<UserQuery> *GetPortIn();
 
   void Insert(const ArgsType &args);
 
@@ -35,7 +35,7 @@ private:
   auto GetCallback();
 
   Model *model_ptr_;
-  Observer port_in_;
+  Observer<UserQuery> port_in_;
 };
 
 } // namespace DSViz

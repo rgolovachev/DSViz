@@ -6,41 +6,69 @@
 
 namespace DSViz {
 
-class Observer;
+// T - тип данных сообщения
 
-class Observable {
+template <typename T> class Observer;
+
+template <typename T> class Observable {
 public:
   Observable() = default;
 
-  ~Observable();
+  ~Observable() {
+    while (!list_observer_.empty()) {
+      (*list_observer_.begin())->Unsubscribe(false);
+      list_observer_.pop_front();
+    }
+  }
 
-  void Subscribe(Observer *observer);
+  void Subscribe(Observer<T> *observer) {
+    list_observer_.push_back(observer);
+    observer->OnNotify(msg_);
+  }
 
-  void Detach(Observer *observer);
+  void Detach(Observer<T> *observer) { list_observer_.remove(observer); }
 
-  void Notify();
+  void Notify() {
+    for (auto observer : list_observer_) {
+      observer->OnNotify(msg_);
+    }
+  }
 
-  void Set(const std::any &msg);
+  void Set(const T &msg) {
+    msg_ = msg;
+    Notify();
+  }
 
 private:
-  std::list<Observer *> list_observer_;
-  std::any msg_;
+  std::list<Observer<T> *> list_observer_;
+  T msg_;
 };
 
-class Observer {
-  using LambdaType = std::function<void(const std::any &)>;
+template <typename T> class Observer {
+  using LambdaType = std::function<void(const T &)>;
 
 public:
-  Observer(LambdaType lmbd);
+  Observer(LambdaType lmbd) : observable_{}, lmbd_{lmbd} {}
 
-  ~Observer();
+  ~Observer() {
+    if (observable_) {
+      observable_->Detach(this);
+    }
+  }
 
-  void OnNotify(const std::any &msg);
+  void OnNotify(const T &msg) { lmbd_(msg); }
 
-  void Unsubscribe(bool do_detach = true);
+  void Unsubscribe(bool do_detach = true) {
+    if (observable_) {
+      if (do_detach) {
+        observable_->Detach(this);
+      }
+      observable_ = nullptr;
+    }
+  }
 
 private:
-  Observable *observable_;
+  Observable<T> *observable_;
   LambdaType lmbd_;
 };
 

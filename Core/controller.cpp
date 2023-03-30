@@ -5,14 +5,13 @@ namespace DSViz {
 // если что, компилятор требует от меня определить GetCallback заранее т.к. тип
 // возвращаемого значения должен быть выведен компилятором (auto)
 auto Controller::GetCallback() {
-  return
-      [this](const std::any &msg) { HandleMsg(std::any_cast<UserQuery>(msg)); };
+  return [this](const UserQuery &msg) { HandleMsg(msg); };
 }
 
 Controller::Controller(Model *model)
     : model_ptr_{model}, port_in_{GetCallback()} {}
 
-Observer *Controller::GetPortIn() { return &port_in_; }
+Observer<Controller::UserQuery> *Controller::GetPortIn() { return &port_in_; }
 
 void Controller::Insert(const ArgsType &args) {
   model_ptr_->Insert(args.first, args.second);

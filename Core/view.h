@@ -123,12 +123,14 @@ class View : public QObject {
   using Text = detail::Text;
   using PVNode = PVNode<int>;
   using PNode = PNode<int>;
+  using MsgType = MsgType<int>;
+  using UserQuery = UserQuery<int>;
 
 public:
   View();
 
-  Observable *GetPortOut();
-  Observer *GetPortIn();
+  Observable<UserQuery> *GetPortOut();
+  Observer<MsgType> *GetPortIn();
 
   static constexpr const char *kFont = "Monaco";
   static constexpr const char *kErrMsg =
@@ -152,6 +154,7 @@ private:
   void ConfigureWidgets();
   bool DoDelay(MsgCode code);
   auto GetCallback();
+  void HandleMsg(MsgCode code, const BareTrees<int> &trees);
 
   void UpdateComboBox();
 
@@ -183,8 +186,8 @@ private:
   int y_ = {};
   int next_id_ = 1;
 
-  Observer port_in_;
-  Observable port_out_;
+  Observer<MsgType> port_in_;
+  Observable<UserQuery> port_out_;
 };
 
 } // namespace DSViz

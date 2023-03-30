@@ -32,7 +32,6 @@ SOURCES += \
     Core/vnode.cpp \
     main.cpp \
     App/mainwindow.cpp \
-    Observer/observer.cpp \
     Core/view.cpp
 
 HEADERS += \
