@@ -3,9 +3,6 @@
 #include "Common/query.h"
 #include "Core/model.h"
 #include "Observer/observer.h"
-#include <any>
-#include <functional>
-#include <iostream>
 
 namespace DSViz {
 

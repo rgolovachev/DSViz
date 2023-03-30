@@ -2,8 +2,6 @@
 #define VNODE_H
 #include "Common/node.h"
 #include <QColor>
-#include <memory>
-#include <type_traits>
 
 namespace DSViz {
 

@@ -1,6 +1,6 @@
 #ifndef QUERY_H
 #define QUERY_H
-#include <list>
+#include <utility>
 
 namespace DSViz {
 

@@ -5,24 +5,11 @@
 #include "Common/query.h"
 #include "Core/vnode.h"
 #include "Observer/observer.h"
-#include "ui_mainwindow.h"
 #include <QComboBox>
-#include <QMessageBox>
-#include <QMouseEvent>
-#include <QObject>
-#include <QTime>
 #include <QTimer>
-#include <map>
-#include <qwt_legend.h>
 #include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_layout.h>
-#include <qwt_plot_legenditem.h>
-#include <qwt_plot_marker.h>
 #include <qwt_plot_panner.h>
 #include <qwt_symbol.h>
-#include <qwt_text.h>
-#include <type_traits>
 
 namespace DSViz {
 

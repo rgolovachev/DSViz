@@ -1,7 +1,5 @@
 #ifndef OBSERVER_H
 #define OBSERVER_H
-#include <any>
-#include <functional>
 #include <list>
 
 namespace DSViz {

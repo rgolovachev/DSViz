@@ -1,8 +1,6 @@
 #ifndef NODE_H
 #define NODE_H
 #include <map>
-#include <memory>
-#include <vector>
 
 namespace DSViz {
 

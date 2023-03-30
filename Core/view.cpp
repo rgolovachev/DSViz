@@ -1,4 +1,11 @@
 #include "Core/view.h"
+#include "ui_mainwindow.h"
+#include <QMessageBox>
+#include <QMouseEvent>
+#include <qwt_plot_curve.h>
+#include <qwt_plot_legenditem.h>
+#include <qwt_plot_marker.h>
+#include <qwt_text.h>
 
 namespace DSViz {
 
