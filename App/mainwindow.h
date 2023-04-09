@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "qwt_plot.h"
 #include <QMainWindow>
 #include <memory>
 
@@ -18,6 +19,8 @@ class MainWindow : public QMainWindow {
 public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
+
+  QwtPlot *GetPlot();
 
   std::unique_ptr<Ui::MainWindow> ui;
 };

@@ -112,7 +112,7 @@ auto View::GetCallback() {
 
 View::View()
     : MW_{std::make_unique<MainWindow>()},
-      panner_{std::make_unique<CustomPanner>(MW_->ui->qwt_plot->canvas())},
+      panner_{std::make_unique<CustomPanner>(MW_->GetPlot()->canvas())},
       port_in_{GetCallback()} {
   ConnectWidgets();
   ConfigureWidgets();
@@ -186,10 +186,10 @@ void View::OnButtonClick() {
 
 void View::OnZoom(double value) {
   scale_ = value;
-  MW_->ui->qwt_plot->setAxisScale(QwtPlot::xBottom, -kBound / scale_,
-                                  kBound / scale_);
-  MW_->ui->qwt_plot->setAxisScale(QwtPlot::yLeft, -kBound / scale_,
-                                  kBound / scale_);
+  MW_->GetPlot()->setAxisScale(QwtPlot::xBottom, -kBound / scale_,
+                               kBound / scale_);
+  MW_->GetPlot()->setAxisScale(QwtPlot::yLeft, -kBound / scale_,
+                               kBound / scale_);
   Draw();
   panner_->moveCanvas(x_, y_);
 }
@@ -223,11 +223,11 @@ void View::ConnectWidgets() {
 }
 
 void View::ConfigureWidgets() {
-  MW_->ui->qwt_plot->setCanvasBackground(Qt::white);
-  MW_->ui->qwt_plot->setAxisScale(QwtPlot::xBottom, -kBound, kBound);
-  MW_->ui->qwt_plot->setAxisScale(QwtPlot::yLeft, -kBound, kBound);
-  MW_->ui->qwt_plot->enableAxis(0, false);
-  MW_->ui->qwt_plot->enableAxis(2, false);
+  MW_->GetPlot()->setCanvasBackground(Qt::white);
+  MW_->GetPlot()->setAxisScale(QwtPlot::xBottom, -kBound, kBound);
+  MW_->GetPlot()->setAxisScale(QwtPlot::yLeft, -kBound, kBound);
+  MW_->GetPlot()->enableAxis(0, false);
+  MW_->GetPlot()->enableAxis(2, false);
   MW_->ui->qwt_slider->setValue(kSliderBegin);
   MW_->ui->qwt_slider->setScale(kSliderLowerBound, kSliderUpperBound);
   panner_->setMouseButton(Qt::LeftButton);
@@ -301,7 +301,7 @@ void View::Prepare() {
 }
 
 void View::Draw() {
-  auto plot = MW_->ui->qwt_plot;
+  auto plot = MW_->GetPlot();
 
   plot->detachItems();
 
@@ -387,7 +387,7 @@ void View::AttachVertex(PVNode vnode, QwtSymbol *sym) {
     num->setItemAttribute(QwtPlotItem::Legend, true);
   }
 
-  num->attach(MW_->ui->qwt_plot);
+  num->attach(MW_->GetPlot());
 }
 
 QwtSymbol *View::GetSymbol(PVNode vnode) {
