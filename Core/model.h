@@ -51,7 +51,7 @@ public:
 
   void DeleteTree(int id);
 
-  Observable<MsgType> *GetPortOut();
+  void SubscribeToView(Observer<Model::MsgType> *view_observer);
 
 private:
   void update(PNode v);

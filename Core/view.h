@@ -116,7 +116,7 @@ class View : public QObject {
 public:
   View();
 
-  Observable<UserQuery> *GetPortOut();
+  void SubscribeToController(Observer<UserQuery> *controller_observer);
   Observer<MsgType> *GetPortIn();
 
   static constexpr const char *kFont = "Monaco";

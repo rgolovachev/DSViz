@@ -10,6 +10,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 // пустой деструктор все таки нужен:
 // https://stackoverflow.com/questions/34072862/why-is-error-invalid-application-of-sizeof-to-an-incomplete-type-using-uniqu
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() = default;
 
 } // namespace DSViz

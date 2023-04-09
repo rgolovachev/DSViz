@@ -150,7 +150,9 @@ View::View()
   port_out_.Set(UserQuery{QueryType::DO_NOTHING, {0, 0}});
 }
 
-Observable<View::UserQuery> *View::GetPortOut() { return &port_out_; }
+void View::SubscribeToController(Observer<UserQuery> *controller_observer) {
+  port_out_.Subscribe(controller_observer);
+}
 
 Observer<View::MsgType> *View::GetPortIn() { return &port_in_; }
 
