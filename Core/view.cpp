@@ -15,7 +15,7 @@ QColor Palette::GetColor(State state) {
   if (StateToClr.find(state) != StateToClr.end()) {
     return StateToClr.at(state);
   }
-  return QColorConstants::Gray;
+  return kDefaultColor;
 }
 
 std::string Text::GetMsg(MsgCode code) {
@@ -23,34 +23,6 @@ std::string Text::GetMsg(MsgCode code) {
     return StrMsg.at(code);
   }
   return "";
-}
-
-QString Text::GetText(QComboBox *ptr) {
-  if (ptr) {
-    return ptr->currentText();
-  }
-  return "";
-}
-
-void Text::ClearBox(QComboBox *ptr) {
-  if (ptr) {
-    ptr->clear();
-  }
-}
-
-void Text::InsertItem(QComboBox *ptr, int num) {
-  if (ptr) {
-    ptr->addItem(std::to_string(num).c_str());
-  }
-}
-
-void Text::UpdIndex(QComboBox *ptr, const QString &str) {
-  int index = ptr->findText(str);
-  if (index != -1) {
-    ptr->setCurrentIndex(index);
-  } else {
-    ptr->setCurrentIndex(0);
-  }
 }
 
 std::string Text::LegendByState(State state) {
@@ -286,22 +258,22 @@ void View::UpdateComboBox() {
             *righttreeId = MW_->ui->righttreeId;
   QObject::disconnect(maintreeId, SIGNAL(currentTextChanged(QString)), this,
                       SLOT(OnChoiceChange(QString)));
-  QString cur_str = Text::GetText(maintreeId);
-  QString merge1_str = Text::GetText(lefttreeId);
-  QString merge2_str = Text::GetText(righttreeId);
-  Text::ClearBox(maintreeId);
-  Text::ClearBox(lefttreeId);
-  Text::ClearBox(righttreeId);
+  QString cur_str = GetText(maintreeId);
+  QString merge1_str = GetText(lefttreeId);
+  QString merge2_str = GetText(righttreeId);
+  ClearBox(maintreeId);
+  ClearBox(lefttreeId);
+  ClearBox(righttreeId);
   for (auto &[num, tree] : trees_) {
-    Text::InsertItem(maintreeId, num);
-    Text::InsertItem(lefttreeId, num);
-    Text::InsertItem(righttreeId, num);
+    InsertItem(maintreeId, num);
+    InsertItem(lefttreeId, num);
+    InsertItem(righttreeId, num);
   }
   QObject::connect(MW_->ui->maintreeId, SIGNAL(currentTextChanged(QString)),
                    this, SLOT(OnChoiceChange(QString)));
-  Text::UpdIndex(maintreeId, cur_str);
-  Text::UpdIndex(lefttreeId, merge1_str);
-  Text::UpdIndex(righttreeId, merge2_str);
+  UpdIndex(maintreeId, cur_str);
+  UpdIndex(lefttreeId, merge1_str);
+  UpdIndex(righttreeId, merge2_str);
 }
 
 void View::SetStatus(MsgCode code) {
@@ -425,7 +397,7 @@ QwtSymbol *View::GetSymbol(PVNode vnode) {
   if (!MW_->ui->animationOff->isChecked()) {
     sym->setColor(Palette::GetColor(vnode->node->state));
   } else {
-    sym->setColor(QColorConstants::Gray);
+    sym->setColor(Palette::kDefaultColor);
   }
   return sym;
 }
@@ -473,6 +445,34 @@ void View::SetEnabledWidgets(bool flag) {
   MW_->ui->mergeButton->setEnabled(flag);
   MW_->ui->deltreeButton->setEnabled(flag);
   MW_->ui->animationOff->setEnabled(flag);
+}
+
+QString View::GetText(QComboBox *ptr) {
+  if (ptr) {
+    return ptr->currentText();
+  }
+  return "";
+}
+
+void View::ClearBox(QComboBox *ptr) {
+  if (ptr) {
+    ptr->clear();
+  }
+}
+
+void View::InsertItem(QComboBox *ptr, int num) {
+  if (ptr) {
+    ptr->addItem(std::to_string(num).c_str());
+  }
+}
+
+void View::UpdIndex(QComboBox *ptr, const QString &str) {
+  int index = ptr->findText(str);
+  if (index != -1) {
+    ptr->setCurrentIndex(index);
+  } else {
+    ptr->setCurrentIndex(0);
+  }
 }
 
 } // namespace DSViz

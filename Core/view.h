@@ -19,6 +19,8 @@ class Palette {
 public:
   static QColor GetColor(State state);
 
+  constexpr static const QColor kDefaultColor = QColorConstants::Gray;
+
 private:
   // constexpr сделать не выйдет, у std::map нет constexpr конструктора
   inline static const std::map<State, QColor> StateToClr = {
@@ -42,14 +44,6 @@ private:
 class Text {
 public:
   static std::string GetMsg(MsgCode code);
-
-  static QString GetText(QComboBox *ptr);
-
-  static void ClearBox(QComboBox *ptr);
-
-  static void InsertItem(QComboBox *ptr, int num);
-
-  static void UpdIndex(QComboBox *ptr, const QString &str);
 
   static std::string LegendByState(State state);
 
@@ -160,6 +154,14 @@ private:
   bool IsSubtreeState(PNode node);
   void Delay(double sWait);
   void SetEnabledWidgets(bool flag);
+
+  static QString GetText(QComboBox *ptr);
+
+  static void ClearBox(QComboBox *ptr);
+
+  static void InsertItem(QComboBox *ptr, int num);
+
+  static void UpdIndex(QComboBox *ptr, const QString &str);
 
   // data
   ReadyTree cur_tree_ = {};
