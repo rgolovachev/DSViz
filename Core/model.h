@@ -24,14 +24,14 @@ public:
 
   void DeleteTree(int id);
 
-  size_t Size();
+  size_t Size() const;
 
   PNode &operator[](int key);
 
-  BareTrees Get();
+  const BareTrees &Get();
 
 private:
-  void destroy(PNode root);
+  void destroy(PNode node);
 
   BareTrees trees_;
 };

@@ -19,19 +19,19 @@ void Trees::DeleteTree(int id) {
   }
 }
 
-size_t Trees::Size() { return trees_.size(); }
+size_t Trees::Size() const { return trees_.size(); }
 
 Trees::PNode &Trees::operator[](int key) { return trees_.at(key); }
 
-Trees::BareTrees Trees::Get() { return trees_; }
+const Trees::BareTrees &Trees::Get() { return trees_; }
 
-void Trees::destroy(PNode root) {
-  if (!root) {
+void Trees::destroy(PNode node) {
+  if (!node) {
     return;
   }
-  destroy(root->left);
-  destroy(root->right);
-  delete root;
+  destroy(node->left);
+  destroy(node->right);
+  delete node;
 }
 
 } // namespace detail
