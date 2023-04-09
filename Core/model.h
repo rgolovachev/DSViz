@@ -9,13 +9,17 @@ namespace detail {
 
 class Trees {
 public:
+  Trees() = default;
   ~Trees();
 
-  void Destroy(int id);
+  Trees(const Trees &) = delete;
+  Trees &operator=(const Trees &) = delete;
+  Trees(Trees &&) = delete;
+  Trees &operator=(Trees &&) = delete;
 
-  void Insert(std::pair<int, PNode<int>> tree);
+  void Insert(int id, PNode<int> node);
 
-  void Erase(int id);
+  void DeleteTree(int id);
 
   size_t Size();
 

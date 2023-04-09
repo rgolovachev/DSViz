@@ -10,16 +10,11 @@ Trees::~Trees() {
   }
 }
 
-void Trees::Destroy(int id) {
+void Trees::Insert(int id, PNode<int> node) { trees_.insert({id, node}); }
+
+void Trees::DeleteTree(int id) {
   if (trees_.find(id) != trees_.end()) {
     destroy(trees_[id]);
-  }
-}
-
-void Trees::Insert(std::pair<int, PNode<int>> tree) { trees_.insert(tree); }
-
-void Trees::Erase(int id) {
-  if (trees_.find(id) != trees_.end()) {
     trees_.erase(id);
   }
 }
@@ -42,7 +37,7 @@ void Trees::destroy(PNode<int> root) {
 } // namespace detail
 
 Model::Model() {
-  data_.Insert({next_id_++, nullptr});
+  data_.Insert(next_id_++, nullptr);
   // пока еще никто на модель здесь не подписан, так что я просто изменю поле
   // msg_ в Observable
   port_out_.Set(std::make_pair(MsgCode::empty_msg, data_.Get()));
@@ -96,7 +91,7 @@ void Model::Merge(int left_id, int right_id) {
     rtree->par = hidden_root;
     data_[left_id] = hidden_root;
     data_[left_id] = merge(hidden_root);
-    data_.Erase(right_id);
+    data_.DeleteTree(right_id);
     data_[left_id]->state = State::new_root;
     port_out_.Set(std::make_pair(MsgCode::merge_end, data_.Get()));
     data_[left_id]->state = State::regular;
@@ -125,7 +120,7 @@ void Model::Split(int id, int key) {
   port_out_.Set(std::make_pair(MsgCode::split_succ, data_.Get()));
   delete data_[id];
   data_[id] = ltree;
-  data_.Insert({next_id_++, rtree});
+  data_.Insert(next_id_++, rtree);
   port_out_.Set(std::make_pair(MsgCode::OK, data_.Get()));
 }
 
@@ -145,8 +140,7 @@ void Model::DeleteTree(int id) {
     port_out_.Set(std::make_pair(MsgCode::unsucc_del, data_.Get()));
     return;
   }
-  data_.Destroy(id);
-  data_.Erase(id);
+  data_.DeleteTree(id);
   port_out_.Set(std::make_pair(MsgCode::succ_del, data_.Get()));
 }
 
