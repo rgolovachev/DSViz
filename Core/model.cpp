@@ -10,7 +10,7 @@ Trees::~Trees() {
   }
 }
 
-void Trees::Insert(int id, PNode<int> node) { trees_.insert({id, node}); }
+void Trees::Insert(int id, PNode node) { trees_.insert({id, node}); }
 
 void Trees::DeleteTree(int id) {
   if (trees_.find(id) != trees_.end()) {
@@ -21,11 +21,11 @@ void Trees::DeleteTree(int id) {
 
 size_t Trees::Size() { return trees_.size(); }
 
-PNode<int> &Trees::operator[](int key) { return trees_.at(key); }
+Trees::PNode &Trees::operator[](int key) { return trees_.at(key); }
 
-BareTrees<int> Trees::Get() { return trees_; }
+Trees::BareTrees Trees::Get() { return trees_; }
 
-void Trees::destroy(PNode<int> root) {
+void Trees::destroy(PNode root) {
   if (!root) {
     return;
   }

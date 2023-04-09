@@ -108,9 +108,10 @@ class View : public QObject {
   using CustomPanner = detail::CustomPanner;
   using Palette = detail::Palette;
   using Text = detail::Text;
-  using PVNode = PVNode<int>;
-  using PNode = PNode<int>;
-  using MsgType = MsgType<int>;
+  using PVNode = VNode<int> *;
+  using PNode = Node<int> *;
+  using BareTrees = std::map<int, PNode>;
+  using MsgType = std::pair<MsgCode, BareTrees>;
   using UserQuery = UserQuery<int>;
 
 public:
@@ -141,7 +142,7 @@ private:
   void ConfigureWidgets();
   bool DoDelay(MsgCode code);
   auto GetCallback();
-  void HandleMsg(MsgCode code, const BareTrees<int> &trees);
+  void HandleMsg(MsgCode code, const BareTrees &trees);
 
   void UpdateComboBox();
 
@@ -162,7 +163,7 @@ private:
 
   // data
   ReadyTree cur_tree_ = {};
-  BareTrees<int> trees_;
+  BareTrees trees_;
   std::unique_ptr<MainWindow> MW_;
   std::unique_ptr<CustomPanner> panner_;
   QTimer timer_;

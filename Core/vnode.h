@@ -5,14 +5,10 @@
 
 namespace DSViz {
 
-template <typename T> struct VNode;
-
-template <typename T> using PVNode = VNode<T> *;
-
 // Шаблонный по типу хранимого ключа (VNode<int>)
 template <typename T> struct VNode {
-  PNode<T> node;
-  PVNode<T> left, right;
+  Node<T> *node;
+  VNode<T> *left, *right;
   int x, y, width, x_max, x_min;
   QColor col;
 };
@@ -20,8 +16,8 @@ template <typename T> struct VNode {
 namespace detail {
 
 class ReadyTree {
-  using PNode = PNode<int>;
-  using PVNode = PVNode<int>;
+  using PNode = Node<int> *;
+  using PVNode = VNode<int> *;
 
 public:
   ~ReadyTree();

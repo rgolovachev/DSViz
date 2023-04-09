@@ -269,7 +269,7 @@ bool View::DoDelay(MsgCode code) {
   return false;
 }
 
-void View::HandleMsg(MsgCode code, const BareTrees<int> &trees) {
+void View::HandleMsg(MsgCode code, const BareTrees &trees) {
   trees_ = trees;
   UpdateComboBox();
   SetStatus(code);

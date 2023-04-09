@@ -8,6 +8,9 @@ namespace DSViz {
 namespace detail {
 
 class Trees {
+  using PNode = Node<int> *;
+  using BareTrees = std::map<int, PNode>;
+
 public:
   Trees() = default;
   ~Trees();
@@ -17,28 +20,29 @@ public:
   Trees(Trees &&) = delete;
   Trees &operator=(Trees &&) = delete;
 
-  void Insert(int id, PNode<int> node);
+  void Insert(int id, PNode node);
 
   void DeleteTree(int id);
 
   size_t Size();
 
-  PNode<int> &operator[](int key);
+  PNode &operator[](int key);
 
-  BareTrees<int> Get();
+  BareTrees Get();
 
 private:
-  void destroy(PNode<int> root);
+  void destroy(PNode root);
 
-  BareTrees<int> trees_;
+  BareTrees trees_;
 };
 
 } // namespace detail
 
 class Model {
   using Trees = detail::Trees;
-  using PNode = PNode<int>;
-  using MsgType = MsgType<int>;
+  using PNode = Node<int> *;
+  using BareTrees = std::map<int, PNode>;
+  using MsgType = std::pair<MsgCode, BareTrees>;
 
 public:
   Model();

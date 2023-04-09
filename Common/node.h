@@ -60,16 +60,8 @@ enum class State {
   new_root
 };
 
-template <typename T> struct Node;
-
-template <typename T> using PNode = Node<T> *;
-
-template <typename T> using BareTrees = std::map<int, PNode<T>>;
-
-template <typename T> using MsgType = std::pair<MsgCode, BareTrees<T>>;
-
 template <typename T> struct Node {
-  PNode<T> par, left, right;
+  Node<T> *par, *left, *right;
   T value, min, max;
   State state = State::regular;
 };
