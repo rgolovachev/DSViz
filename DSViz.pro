@@ -7,6 +7,8 @@ CONFIG += c++17
 
 CONFIG += qwt
 
+CONFIG += exceptions_off
+
 ### comment this when push
 #SOURCES += Debug/debug.cpp
 #HEADERS += Debug/debug.h
@@ -17,13 +19,11 @@ CONFIG += qwt
 # (сделал grep по слову throw в папке src и не нашел ничего)
 # надеюсь правильно компиляторы проверяю
 
-win32-msvc*|win64-msvc* {
-    QMAKE_CXXFLAGS += /EHsc
+win*-msvc* {
     QMAKE_CXXFLAGS += /O2
 }
 
 *-g++|*-clang++ {
-    QMAKE_CXXFLAGS += -fno-exceptions
     QMAKE_CXXFLAGS += -O3
 }
 
