@@ -56,25 +56,25 @@ void Text::UpdIndex(QComboBox *ptr, const QString &str) {
 std::string Text::LegendByState(State state) {
   std::string str;
   switch (state) {
-  case State::A_SUBTREE:
+  case State::a_subtree:
     str = "A subtree";
     break;
-  case State::B_SUBTREE:
+  case State::b_subtree:
     str = "B subtree";
     break;
-  case State::C_SUBTREE:
+  case State::c_subtree:
     str = "C subtree";
     break;
-  case State::D_SUBTREE:
+  case State::d_subtree:
     str = "D subtree";
     break;
-  case State::X_VERTEX:
+  case State::x_vertex:
     str = "Vertex X";
     break;
-  case State::P_VERTEX:
+  case State::p_vertex:
     str = "Vertex P";
     break;
-  case State::G_VERTEX:
+  case State::g_vertex:
     str = "Vertex G";
     break;
   default:
@@ -147,7 +147,7 @@ View::View()
   MW_->show();
   // как и в конструкторе model, оно только запишет во внутренние поля
   // Observable это и не будет отправлять потому что еще никто не подписан
-  port_out_.Set(UserQuery{QueryType::DO_NOTHING, {0, 0}});
+  port_out_.Set(UserQuery{QueryType::do_nothing, {0, 0}});
 }
 
 void View::SubscribeToController(Observer<UserQuery> *controller_observer) {
@@ -181,7 +181,7 @@ void View::OnButtonClick() {
     merge_executing_ = true;
     int left_id = MW_->ui->lefttreeId->currentText().toInt(),
         right_id = MW_->ui->righttreeId->currentText().toInt();
-    port_out_.Set(UserQuery{QueryType::MERGE, {left_id, right_id}});
+    port_out_.Set(UserQuery{QueryType::merge, {left_id, right_id}});
     merge_executing_ = false;
     SetEnabledWidgets(true);
     MW_->ui->maintreeId->setCurrentText(MW_->ui->lefttreeId->currentText());
@@ -193,18 +193,18 @@ void View::OnButtonClick() {
   int ver = MW_->ui->vertexId->text().toInt(&ver_correct);
 
   if (id_correct && (sender() == MW_->ui->deltreeButton)) {
-    port_out_.Set(UserQuery{QueryType::DELTREE, {id, 0}});
+    port_out_.Set(UserQuery{QueryType::deltree, {id, 0}});
 
   } else if (id_correct && ver_correct) {
     SetEnabledWidgets(false);
     if (sender() == MW_->ui->insertButton) {
-      port_out_.Set(UserQuery{QueryType::INSERT, {id, ver}});
+      port_out_.Set(UserQuery{QueryType::insert, {id, ver}});
     } else if (sender() == MW_->ui->removeButton) {
-      port_out_.Set(UserQuery{QueryType::REMOVE, {id, ver}});
+      port_out_.Set(UserQuery{QueryType::remove, {id, ver}});
     } else if (sender() == MW_->ui->findButton) {
-      port_out_.Set(UserQuery{QueryType::FIND, {id, ver}});
+      port_out_.Set(UserQuery{QueryType::find, {id, ver}});
     } else if (sender() == MW_->ui->splitButton) {
-      port_out_.Set(UserQuery{QueryType::SPLIT, {id, ver}});
+      port_out_.Set(UserQuery{QueryType::split, {id, ver}});
     }
     SetEnabledWidgets(true);
   } else {
@@ -262,8 +262,8 @@ void View::ConfigureWidgets() {
 }
 
 bool View::DoDelay(MsgCode code) {
-  if (!MW_->ui->animationOff->isChecked() && (code != MsgCode::SUCC_DEL) &&
-      (code != MsgCode::UNSUCC_DEL) && (code != MsgCode::EMPTY_MSG)) {
+  if (!MW_->ui->animationOff->isChecked() && (code != MsgCode::succ_del) &&
+      (code != MsgCode::unsucc_del) && (code != MsgCode::empty_msg)) {
     return true;
   }
   return false;
@@ -306,13 +306,13 @@ void View::UpdateComboBox() {
 
 void View::SetStatus(MsgCode code) {
   std::string msg;
-  if (code == MsgCode::SPLIT_SUCC) {
+  if (code == MsgCode::split_succ) {
     msg = "The left tree ID is " +
           MW_->ui->maintreeId->currentText().toStdString() + ". The right is " +
           QString::number(next_id_).toStdString();
     ++next_id_;
-  } else if (code == MsgCode::MERGE_END) {
-    msg = Text::GetMsg(MsgCode::MERGE_END) +
+  } else if (code == MsgCode::merge_end) {
+    msg = Text::GetMsg(MsgCode::merge_end) +
           MW_->ui->lefttreeId->currentText().toStdString();
   } else {
     msg = Text::GetMsg(code);
@@ -337,11 +337,11 @@ void View::Draw() {
   leg->attach(plot);
   auto cur_tree = cur_tree_.Get();
   if (cur_tree) {
-    if (cur_tree->node->state == State::HIDE_THIS) {
+    if (cur_tree->node->state == State::hide_this) {
       DrawTwoTrees(plot, cur_tree->left, cur_tree->right);
-    } else if (cur_tree->node->state == State::SPLIT_LEFT) {
+    } else if (cur_tree->node->state == State::split_left) {
       DrawTwoTrees(plot, cur_tree->left, cur_tree);
-    } else if (cur_tree->node->state == State::SPLIT_RIGHT) {
+    } else if (cur_tree->node->state == State::split_right) {
       DrawTwoTrees(plot, cur_tree, cur_tree->right);
     } else {
       DrawOneTree(plot);
@@ -383,11 +383,11 @@ void View::AddPoints(QPolygonF &points, PVNode vnode) {
 
   points << QPointF(vnode->x, vnode->y);
   PushState(vnode);
-  if (vnode->node->state != State::SPLIT_LEFT) {
+  if (vnode->node->state != State::split_left) {
     AddPoints(points, vnode->left);
     points << QPointF(vnode->x, vnode->y);
   }
-  if (vnode->node->state != State::SPLIT_RIGHT) {
+  if (vnode->node->state != State::split_right) {
     AddPoints(points, vnode->right);
     points << QPointF(vnode->x, vnode->y);
   }
@@ -407,9 +407,9 @@ void View::AttachVertex(PVNode vnode, QwtSymbol *sym) {
   num->setLabel(txt);
 
   if ((IsSubtreeState(vnode->node) && !IsSubtreeState(vnode->node->par)) ||
-      vnode->node->state == State::X_VERTEX ||
-      vnode->node->state == State::P_VERTEX ||
-      vnode->node->state == State::G_VERTEX) {
+      vnode->node->state == State::x_vertex ||
+      vnode->node->state == State::p_vertex ||
+      vnode->node->state == State::g_vertex) {
     num->setLegendIconSize(QSize(kLegSz, kLegSz));
     num->setTitle(Text::LegendByState(vnode->node->state).c_str());
     num->setItemAttribute(QwtPlotItem::Legend, true);
@@ -444,8 +444,8 @@ bool View::IsSubtreeState(PNode node) {
   if (!node) {
     return false;
   }
-  if (node->state == State::A_SUBTREE || node->state == State::B_SUBTREE ||
-      node->state == State::C_SUBTREE || node->state == State::D_SUBTREE) {
+  if (node->state == State::a_subtree || node->state == State::b_subtree ||
+      node->state == State::c_subtree || node->state == State::d_subtree) {
     return true;
   }
   return false;

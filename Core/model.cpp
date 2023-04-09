@@ -45,16 +45,16 @@ Model::Model() {
   data_.Insert({next_id_++, nullptr});
   // пока еще никто на модель здесь не подписан, так что я просто изменю поле
   // msg_ в Observable
-  port_out_.Set(std::make_pair(MsgCode::EMPTY_MSG, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::empty_msg, data_.Get()));
 }
 
 void Model::Insert(int id, int key) {
   bool flag = false;
   data_[id] = insert(data_[id], key, &flag);
-  port_out_.Set(std::make_pair(MsgCode::INS_DONE, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::ins_done, data_.Get()));
   if (!flag) {
     set_regular(data_[id]);
-    port_out_.Set(std::make_pair(MsgCode::INSERT_ERR, data_.Get()));
+    port_out_.Set(std::make_pair(MsgCode::insert_err, data_.Get()));
     return;
   }
 
@@ -67,14 +67,14 @@ void Model::Remove(int id, int key) {
   data_[id] = remove(data_[id], key, &flag);
   if (!flag) {
     set_regular(data_[id]);
-    port_out_.Set(std::make_pair(MsgCode::REMOVE_ERR, data_.Get()));
+    port_out_.Set(std::make_pair(MsgCode::remove_err, data_.Get()));
     return;
   }
 
   if (data_[id]) {
-    data_[id]->state = State::NEW_ROOT;
-    port_out_.Set(std::make_pair(MsgCode::NEW_ROOT, data_.Get()));
-    data_[id]->state = State::REGULAR;
+    data_[id]->state = State::new_root;
+    port_out_.Set(std::make_pair(MsgCode::new_root, data_.Get()));
+    data_[id]->state = State::regular;
   }
 
   port_out_.Set(std::make_pair(MsgCode::OK, data_.Get()));
@@ -82,11 +82,11 @@ void Model::Remove(int id, int key) {
 
 void Model::Merge(int left_id, int right_id) {
   if (left_id == right_id) {
-    port_out_.Set(std::make_pair(MsgCode::MERGE_EQUAL, data_.Get()));
+    port_out_.Set(std::make_pair(MsgCode::merge_equal, data_.Get()));
     return;
   }
   if (!data_[left_id] || !data_[right_id]) {
-    port_out_.Set(std::make_pair(MsgCode::MERGE_EMPTY, data_.Get()));
+    port_out_.Set(std::make_pair(MsgCode::merge_empty, data_.Get()));
     return;
   }
   if (data_[left_id]->max < data_[right_id]->min) {
@@ -97,32 +97,32 @@ void Model::Merge(int left_id, int right_id) {
     data_[left_id] = hidden_root;
     data_[left_id] = merge(hidden_root);
     data_.Erase(right_id);
-    data_[left_id]->state = State::NEW_ROOT;
-    port_out_.Set(std::make_pair(MsgCode::MERGE_END, data_.Get()));
-    data_[left_id]->state = State::REGULAR;
+    data_[left_id]->state = State::new_root;
+    port_out_.Set(std::make_pair(MsgCode::merge_end, data_.Get()));
+    data_[left_id]->state = State::regular;
     port_out_.Set(std::make_pair(MsgCode::OK, data_.Get()));
   } else {
-    port_out_.Set(std::make_pair(MsgCode::MERGE_ERR, data_.Get()));
+    port_out_.Set(std::make_pair(MsgCode::merge_err, data_.Get()));
   }
 }
 
 void Model::Split(int id, int key) {
   if (!data_[id]) {
-    port_out_.Set(std::make_pair(MsgCode::SPLIT_ERR, data_.Get()));
+    port_out_.Set(std::make_pair(MsgCode::split_err, data_.Get()));
     return;
   }
   auto [ltree, rtree] = split(data_[id], key);
-  if (data_[id]->state != State::HIDE_THIS) {
+  if (data_[id]->state != State::hide_this) {
     if (ltree) {
-      ltree->state = State::REGULAR;
+      ltree->state = State::regular;
     }
     if (rtree) {
-      rtree->state = State::REGULAR;
+      rtree->state = State::regular;
     }
     data_[id] = make_hidden_root(ltree, rtree);
     update(data_[id]);
   }
-  port_out_.Set(std::make_pair(MsgCode::SPLIT_SUCC, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::split_succ, data_.Get()));
   delete data_[id];
   data_[id] = ltree;
   data_.Insert({next_id_++, rtree});
@@ -133,21 +133,21 @@ void Model::ExistKey(int id, int key) {
   data_[id] = find(data_[id], key);
   if (data_[id] && data_[id]->value == key) {
     set_regular(data_[id]);
-    port_out_.Set(std::make_pair(MsgCode::FOUND, data_.Get()));
+    port_out_.Set(std::make_pair(MsgCode::found, data_.Get()));
   } else {
     set_regular(data_[id]);
-    port_out_.Set(std::make_pair(MsgCode::NOT_FOUND, data_.Get()));
+    port_out_.Set(std::make_pair(MsgCode::not_found, data_.Get()));
   }
 }
 
 void Model::DeleteTree(int id) {
   if (data_.Size() == 1) {
-    port_out_.Set(std::make_pair(MsgCode::UNSUCC_DEL, data_.Get()));
+    port_out_.Set(std::make_pair(MsgCode::unsucc_del, data_.Get()));
     return;
   }
   data_.Destroy(id);
   data_.Erase(id);
-  port_out_.Set(std::make_pair(MsgCode::SUCC_DEL, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::succ_del, data_.Get()));
 }
 
 void Model::SubscribeToView(Observer<Model::MsgType> *view_observer) {
@@ -216,8 +216,8 @@ void Model::rotate_right(PNode v) {
 
 void Model::splay(PNode v, PNode hidden_root) {
   set_regular(v);
-  v->state = State::SPLAY_VER;
-  port_out_.Set(std::make_pair(MsgCode::SPLAY_PERF, data_.Get()));
+  v->state = State::splay_ver;
+  port_out_.Set(std::make_pair(MsgCode::splay_perf, data_.Get()));
 
   while (v->par) {
     if (v == v->par->left) {
@@ -244,8 +244,8 @@ void Model::splay(PNode v, PNode hidden_root) {
   }
 
   set_regular(v);
-  v->state = State::SPLAY_VER;
-  port_out_.Set(std::make_pair(MsgCode::SPLAY_PERF, data_.Get()));
+  v->state = State::splay_ver;
+  port_out_.Set(std::make_pair(MsgCode::splay_perf, data_.Get()));
 }
 
 void Model::zig(PNode v, PNode hidden_root, bool is_right_zig) {
@@ -254,7 +254,7 @@ void Model::zig(PNode v, PNode hidden_root, bool is_right_zig) {
   } else {
     set_state(v, v->par->left, v->left, v->right);
   }
-  port_out_.Set(std::make_pair(MsgCode::ZIG_PERF, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::zig_perf, data_.Get()));
 
   auto old_root = v->par;
   if (is_right_zig) {
@@ -268,7 +268,7 @@ void Model::zig(PNode v, PNode hidden_root, bool is_right_zig) {
   } else {
     hidden_root->left = v;
   }
-  port_out_.Set(std::make_pair(MsgCode::ZIG_END, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::zig_end, data_.Get()));
 }
 
 void Model::zig_zig(PNode v, PNode hidden_root, bool is_right_zig_zig) {
@@ -277,7 +277,7 @@ void Model::zig_zig(PNode v, PNode hidden_root, bool is_right_zig_zig) {
   } else {
     set_state(v, v->par->par->left, v->par->left, v->left, v->right);
   }
-  port_out_.Set(std::make_pair(MsgCode::ZIGZIG_PERF, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::zigzig_perf, data_.Get()));
 
   auto old_root = v->par->par;
   if (is_right_zig_zig) {
@@ -293,7 +293,7 @@ void Model::zig_zig(PNode v, PNode hidden_root, bool is_right_zig_zig) {
       hidden_root->left = v->par;
     }
   }
-  port_out_.Set(std::make_pair(MsgCode::ZIGZIG_PERF, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::zigzig_perf, data_.Get()));
 
   old_root = v->par;
   if (is_right_zig_zig) {
@@ -309,7 +309,7 @@ void Model::zig_zig(PNode v, PNode hidden_root, bool is_right_zig_zig) {
       hidden_root->left = v;
     }
   }
-  port_out_.Set(std::make_pair(MsgCode::ZIGZIG_END, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::zigzig_end, data_.Get()));
 }
 
 void Model::zig_zag(PNode v, PNode hidden_root, bool is_right_left) {
@@ -318,14 +318,14 @@ void Model::zig_zag(PNode v, PNode hidden_root, bool is_right_left) {
   } else {
     set_state(v, v->par->left, v->left, v->right, v->par->par->right);
   }
-  port_out_.Set(std::make_pair(MsgCode::ZIGZAG_PERF, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::zigzag_perf, data_.Get()));
 
   if (is_right_left) {
     rotate_right(v->par);
   } else {
     rotate_left(v->par);
   }
-  port_out_.Set(std::make_pair(MsgCode::ZIGZAG_PERF, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::zigzag_perf, data_.Get()));
 
   auto old_root = v->par;
   if (is_right_left) {
@@ -340,27 +340,27 @@ void Model::zig_zag(PNode v, PNode hidden_root, bool is_right_left) {
       hidden_root->left = v;
     }
   }
-  port_out_.Set(std::make_pair(MsgCode::ZIGZAG_END, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::zigzag_end, data_.Get()));
 }
 
 void Model::set_state(PNode v, PNode A, PNode B, PNode C, PNode D) {
   set_regular(v);
-  v->state = State::X_VERTEX;
-  v->par->state = State::P_VERTEX;
+  v->state = State::x_vertex;
+  v->par->state = State::p_vertex;
   if (v->par->par) {
-    v->par->par->state = State::G_VERTEX;
+    v->par->par->state = State::g_vertex;
   }
   if (A) {
-    A->state = State::A_SUBTREE;
+    A->state = State::a_subtree;
   }
   if (B) {
-    B->state = State::B_SUBTREE;
+    B->state = State::b_subtree;
   }
   if (C) {
-    C->state = State::C_SUBTREE;
+    C->state = State::c_subtree;
   }
   if (D) {
-    D->state = State::D_SUBTREE;
+    D->state = State::d_subtree;
   }
 }
 
@@ -382,28 +382,28 @@ Model::PNode Model::find(PNode v, int key) {
     return v;
   }
   if (v->value == key) {
-    v->state = State::FOUND;
-    port_out_.Set(std::make_pair(MsgCode::FOUND, data_.Get()));
+    v->state = State::found;
+    port_out_.Set(std::make_pair(MsgCode::found, data_.Get()));
     set_regular(v);
 
     splay(v);
     return v;
   }
   if (v->value > key && v->left) {
-    v->state = State::ON_PATH;
-    port_out_.Set(std::make_pair(MsgCode::SEARCH, data_.Get()));
+    v->state = State::on_path;
+    port_out_.Set(std::make_pair(MsgCode::search, data_.Get()));
 
     return find(v->left, key);
   }
   if (v->value < key && v->right) {
-    v->state = State::ON_PATH;
-    port_out_.Set(std::make_pair(MsgCode::SEARCH, data_.Get()));
+    v->state = State::on_path;
+    port_out_.Set(std::make_pair(MsgCode::search, data_.Get()));
 
     return find(v->right, key);
   }
 
-  v->state = State::NOT_FOUND;
-  port_out_.Set(std::make_pair(MsgCode::NOT_FOUND, data_.Get()));
+  v->state = State::not_found;
+  port_out_.Set(std::make_pair(MsgCode::not_found, data_.Get()));
 
   splay(v);
   return v;
@@ -418,12 +418,12 @@ std::pair<Model::PNode, Model::PNode> Model::split(PNode v, int key,
     return {nullptr, nullptr};
   }
   set_regular(v);
-  port_out_.Set(std::make_pair(MsgCode::SPLIT_PERF, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::split_perf, data_.Get()));
   v = find(v, key);
-  port_out_.Set(std::make_pair(MsgCode::SPLIT_PERF, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::split_perf, data_.Get()));
   if (v->value == key) {
-    v->state = State::HIDE_THIS;
-    port_out_.Set(std::make_pair(MsgCode::SPLIT_PERF, data_.Get()));
+    v->state = State::hide_this;
+    port_out_.Set(std::make_pair(MsgCode::split_perf, data_.Get()));
     auto ltree = v->left;
     auto rtree = v->right;
     if (ltree) {
@@ -438,8 +438,8 @@ std::pair<Model::PNode, Model::PNode> Model::split(PNode v, int key,
     return {ltree, rtree};
   }
   if (v->value < key) {
-    v->state = State::SPLIT_RIGHT;
-    port_out_.Set(std::make_pair(MsgCode::SPLIT_PERF, data_.Get()));
+    v->state = State::split_right;
+    port_out_.Set(std::make_pair(MsgCode::split_perf, data_.Get()));
     auto rtree = v->right;
     v->right = nullptr;
     if (rtree) {
@@ -451,8 +451,8 @@ std::pair<Model::PNode, Model::PNode> Model::split(PNode v, int key,
     }
     return {v, rtree};
   } else {
-    v->state = State::SPLIT_LEFT;
-    port_out_.Set(std::make_pair(MsgCode::SPLIT_PERF, data_.Get()));
+    v->state = State::split_left;
+    port_out_.Set(std::make_pair(MsgCode::split_perf, data_.Get()));
     auto ltree = v->left;
     v->left = nullptr;
     if (ltree) {
@@ -468,7 +468,7 @@ std::pair<Model::PNode, Model::PNode> Model::split(PNode v, int key,
 
 Model::PNode Model::insert(PNode v, int key, bool *res) {
   auto [ltree, rtree] = split(v, key, res);
-  if (v && v->state == State::HIDE_THIS) {
+  if (v && v->state == State::hide_this) {
     delete v;
   }
   PNode new_node{new Node<int>{.par = nullptr,
@@ -479,15 +479,15 @@ Model::PNode Model::insert(PNode v, int key, bool *res) {
                                .max = key}};
   if (ltree) {
     ltree->par = new_node;
-    ltree->state = State::REGULAR;
+    ltree->state = State::regular;
   }
   if (rtree) {
     rtree->par = new_node;
-    rtree->state = State::REGULAR;
+    rtree->state = State::regular;
   }
   update(new_node);
   set_regular(new_node);
-  new_node->state = State::INSERTED;
+  new_node->state = State::inserted;
   return new_node;
 }
 
@@ -512,7 +512,7 @@ Model::PNode Model::insert(PNode v, int key, bool *res) {
 // необходимо учитывать
 
 Model::PNode Model::merge(PNode hidden_root) {
-  port_out_.Set(std::make_pair(MsgCode::MERGE_PERF, data_.Get()));
+  port_out_.Set(std::make_pair(MsgCode::merge_perf, data_.Get()));
 
   auto ltree = hidden_root->left, rtree = hidden_root->right;
   if (!ltree) {
@@ -524,12 +524,12 @@ Model::PNode Model::merge(PNode hidden_root) {
   }
   ltree->par = nullptr;
   while (ltree->right) {
-    ltree->state = State::ON_PATH;
-    port_out_.Set(std::make_pair(MsgCode::R_SEARCH, data_.Get()));
+    ltree->state = State::on_path;
+    port_out_.Set(std::make_pair(MsgCode::r_search, data_.Get()));
     ltree = ltree->right;
   }
-  ltree->state = State::FOUND;
-  port_out_.Set(std::make_pair(MsgCode::R_FOUND, data_.Get()));
+  ltree->state = State::found;
+  port_out_.Set(std::make_pair(MsgCode::r_found, data_.Get()));
   splay(ltree, hidden_root);
   set_regular(hidden_root);
   ltree->right = rtree;
@@ -551,14 +551,14 @@ Model::PNode Model::remove(PNode v, int key, bool *res) {
     if (res) {
       *res = true;
     }
-    v->state = State::DO_REMOVE;
-    port_out_.Set(std::make_pair(MsgCode::DO_REM, data_.Get()));
-    v->state = State::HIDE_THIS;
+    v->state = State::do_remove;
+    port_out_.Set(std::make_pair(MsgCode::do_rem, data_.Get()));
+    v->state = State::hide_this;
     return merge(v);
   }
 
-  v->state = State::DONT_REM;
-  port_out_.Set(std::make_pair(MsgCode::DONT_REM, data_.Get()));
+  v->state = State::dont_rem;
+  port_out_.Set(std::make_pair(MsgCode::dont_rem, data_.Get()));
   if (res) {
     *res = false;
   }
@@ -580,7 +580,7 @@ void Model::set_regular(PNode root, PNode prev) {
     set_regular(root->par, root);
   }
 
-  root->state = State::REGULAR;
+  root->state = State::regular;
 }
 
 Model::PNode Model::make_hidden_root(PNode ltree, PNode rtree) {
@@ -590,7 +590,7 @@ Model::PNode Model::make_hidden_root(PNode ltree, PNode rtree) {
                        .value = ltree->max,
                        .min = 0,
                        .max = 0,
-                       .state = State::HIDE_THIS};
+                       .state = State::hide_this};
 }
 
 } // namespace DSViz

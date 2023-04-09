@@ -39,22 +39,22 @@ void Controller::DeleteTree(const ArgsType &args) {
 
 void Controller::HandleMsg(const UserQuery &data) {
   switch (data.type) {
-  case QueryType::INSERT:
+  case QueryType::insert:
     Insert(data.args);
     break;
-  case QueryType::REMOVE:
+  case QueryType::remove:
     Remove(data.args);
     break;
-  case QueryType::FIND:
+  case QueryType::find:
     Find(data.args);
     break;
-  case QueryType::SPLIT:
+  case QueryType::split:
     Split(data.args);
     break;
-  case QueryType::MERGE:
+  case QueryType::merge:
     Merge(data.args);
     break;
-  case QueryType::DELTREE:
+  case QueryType::deltree:
     DeleteTree(data.args);
     break;
   default:
