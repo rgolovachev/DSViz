@@ -427,7 +427,7 @@ void View::Delay(double sWait) {
   stopped_ = false;
   QEventLoop loop;
   timer_.connect(&timer_, &QTimer::timeout, &loop, &QEventLoop::quit);
-  timer_.start(sWait * 1000);
+  timer_.start(sWait * kSecondsPerMinute);
   MW_->ui->pauseButton->setEnabled(true);
   loop.exec();
   MW_->ui->pauseButton->setEnabled(false);

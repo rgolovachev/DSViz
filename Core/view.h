@@ -114,6 +114,7 @@ public:
   void SubscribeToController(Observer<UserQuery> *controller_observer);
   Observer<MsgType> *GetPortIn();
 
+  static constexpr const int kSecondsPerMinute = 1000;
   static constexpr const char *kFont = "Monaco";
   static constexpr const char *kErrMsg =
       "Номер дерева и/или вершины - не число";
