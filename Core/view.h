@@ -108,6 +108,8 @@ class View : public QObject {
   using MsgType = std::pair<MsgCode, BareTrees>;
   using UserQuery = UserQuery<int>;
 
+  auto GetCallback();
+
 public:
   View();
 
@@ -136,7 +138,6 @@ private:
   void ConnectWidgets();
   void ConfigureWidgets();
   bool DoDelay(MsgCode code);
-  auto GetCallback();
   void HandleMsg(MsgCode code, const BareTrees &trees);
 
   void UpdateComboBox();
