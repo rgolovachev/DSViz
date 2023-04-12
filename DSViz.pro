@@ -9,10 +9,6 @@ CONFIG += qwt
 
 CONFIG += exceptions_off
 
-# решил забить на исключения, qwt вроде не должна их бросать
-# (сделал grep по слову throw в папке src и не нашел ничего)
-# надеюсь правильно компиляторы проверяю
-
 CONFIG(debug, debug|release) {
   ## код для дебага
   SOURCES += Debug/debug.cpp
