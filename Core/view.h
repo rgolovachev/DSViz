@@ -113,7 +113,7 @@ class View : public QObject {
 public:
   View();
 
-  void SubscribeToController(Observer<UserQuery> *controller_observer);
+  void SubscribeToUserInput(Observer<UserQuery> *controller_observer);
   Observer<MsgType> *GetPortIn();
 
   static constexpr const int kSecondsPerMinute = 1000;

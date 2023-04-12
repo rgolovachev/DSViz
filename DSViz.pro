@@ -9,23 +9,26 @@ CONFIG += qwt
 
 CONFIG += exceptions_off
 
-### comment this when push
-#SOURCES += Debug/debug.cpp
-#HEADERS += Debug/debug.h
-###
-
-
 # решил забить на исключения, qwt вроде не должна их бросать
 # (сделал grep по слову throw в папке src и не нашел ничего)
 # надеюсь правильно компиляторы проверяю
 
-win*-msvc* {
-    QMAKE_CXXFLAGS += /O2
+CONFIG(debug, debug|release) {
+  ## код для дебага
+  SOURCES += Debug/debug.cpp
+  HEADERS += Debug/debug.h
+} else {
+  ## код для релиза
+  win*-msvc* {
+      QMAKE_CXXFLAGS += /O2
+  }
+
+  *-g++|*-clang++ {
+      QMAKE_CXXFLAGS += -O3
+  }
 }
 
-*-g++|*-clang++ {
-    QMAKE_CXXFLAGS += -O3
-}
+
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.

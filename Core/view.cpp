@@ -122,7 +122,7 @@ View::View()
   port_out_.Set(UserQuery{QueryType::do_nothing, {0, 0}});
 }
 
-void View::SubscribeToController(Observer<UserQuery> *controller_observer) {
+void View::SubscribeToUserInput(Observer<UserQuery> *controller_observer) {
   port_out_.Subscribe(controller_observer);
 }
 
