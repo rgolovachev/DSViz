@@ -6,8 +6,8 @@
 
 namespace DSViz {
 
-static void write_log(const std::string &str);
-static void clear_log();
+static void WriteLog(const std::string &str);
+static void ClearLog();
 
 } // namespace DSViz
 
