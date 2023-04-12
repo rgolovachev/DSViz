@@ -24,6 +24,9 @@ public:
   Observable &operator=(Observable &&) = delete;
 
   void Subscribe(Observer<T> *observer) {
+    if (observer->IsSubscribed()) {
+      observer->Unsubscribe();
+    }
     list_observer_.push_back(observer);
     observer->SetObservable(this);
     observer->OnNotify(msg_);
@@ -58,7 +61,7 @@ template <typename T> class Observer {
   using LambdaType = std::function<void(const T &)>;
 
 public:
-  Observer(LambdaType lmbd) : observable_{}, lmbd_{lmbd} {}
+  Observer(LambdaType lmbd) : observable_{}, lmbd_{std::move(lmbd)} {}
 
   ~Observer() { Unsubscribe(); }
 
@@ -74,11 +77,11 @@ public:
     }
   }
 
+  bool IsSubscribed() const { return observable_; }
+
   friend class Observable<T>;
 
 private:
-  bool IsSubscribed() const { return observable_; }
-
   void SetObservable(Observable<T> *observable) { observable_ = observable; }
 
   void OnNotify(const T &msg) const { lmbd_(msg); }

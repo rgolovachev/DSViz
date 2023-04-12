@@ -155,7 +155,7 @@ void Model::DeleteTree(int id) {
   port_out_.Set(std::make_pair(MsgCode::succ_del, data_.Get()));
 }
 
-void Model::SubscribeToView(Observer<Model::MsgType> *view_observer) {
+void Model::SubscribeToBareTree(Observer<Model::MsgType> *view_observer) {
   port_out_.Subscribe(view_observer);
 }
 

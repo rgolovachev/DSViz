@@ -60,7 +60,7 @@ public:
 
   void DeleteTree(int id);
 
-  void SubscribeToView(Observer<MsgType> *view_observer);
+  void SubscribeToBareTree(Observer<MsgType> *view_observer);
 
 private:
   void update(PNode v);
