@@ -12,9 +12,16 @@ Trees::~Trees() {
 
 void Trees::Insert(int id, PNode node) { trees_.insert({id, node}); }
 
+// здесь хренотень какая-то происходит, из-за чего падает merge
 void Trees::DeleteTree(int id) {
   if (trees_.find(id) != trees_.end()) {
     destroy(trees_[id]);
+    trees_.erase(id);
+  }
+}
+
+void Trees::DiscardTree(int id) {
+  if (trees_.find(id) != trees_.end()) {
     trees_.erase(id);
   }
 }
@@ -91,7 +98,11 @@ void Model::Merge(int left_id, int right_id) {
     rtree->par = hidden_root;
     data_[left_id] = hidden_root;
     data_[left_id] = merge(hidden_root);
-    data_.DeleteTree(right_id);
+    // исправил багу, вообще неясно, почему оно еще раньше не упало (коммит
+    // когда я заменил Erase и Destroy в классе Trees на одну функцию
+    // DestroyTree) Тут именно важно что я удаляю ключ, а не все дерево, так что
+    // завел функцию DiscardTree, которая именно это и делает
+    data_.DiscardTree(right_id);
     data_[left_id]->state = State::new_root;
     port_out_.Set(std::make_pair(MsgCode::merge_end, data_.Get()));
     data_[left_id]->state = State::regular;

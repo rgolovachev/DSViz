@@ -20,7 +20,7 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
-  QwtPlot *GetPlot();
+  QwtPlot *Plot();
 
   std::unique_ptr<Ui::MainWindow> ui;
 };

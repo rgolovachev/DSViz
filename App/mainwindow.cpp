@@ -12,6 +12,6 @@ MainWindow::MainWindow(QWidget *parent)
 // https://stackoverflow.com/questions/34072862/why-is-error-invalid-application-of-sizeof-to-an-incomplete-type-using-uniqu
 MainWindow::~MainWindow() = default;
 
-QwtPlot *MainWindow::GetPlot() { return ui->qwt_plot; }
+QwtPlot *MainWindow::Plot() { return ui->qwt_plot; }
 
 } // namespace DSViz

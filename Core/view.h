@@ -133,6 +133,7 @@ public slots:
   void OnButtonClick();
   void OnZoom(double value);
   void OnChoiceChange(QString num);
+  void OnMergeChoiceChange(QString num);
 
 private:
   void ConnectWidgets();
@@ -140,6 +141,9 @@ private:
   bool DoDelay(MsgCode code);
   void HandleMsg(MsgCode code, const BareTrees &trees);
 
+  void UpdateTreeId(int &tree_id);
+  void ConnectComboBoxes();
+  void DisconnectComboBoxes();
   void UpdateComboBox();
 
   void SetStatus(MsgCode code);
@@ -163,11 +167,11 @@ private:
 
   static void InsertItem(QComboBox *ptr, int num);
 
-  static void UpdIndex(QComboBox *ptr, const QString &str);
+  static void UpdComboBoxText(QComboBox *ptr, int cur_id);
 
   // data
   ReadyTree cur_tree_ = {};
-  BareTrees trees_;
+  const BareTrees *trees_ = {};
   std::unique_ptr<MainWindow> MW_;
   std::unique_ptr<CustomPanner> panner_;
   QTimer timer_;
@@ -177,6 +181,9 @@ private:
   int x_ = {};
   int y_ = {};
   int next_id_ = 1;
+  int main_tree_id_ = 0;
+  int left_tree_id_ = 0;
+  int right_tree_id_ = 0;
 
   Observer<MsgType> port_in_;
   Observable<UserQuery> port_out_;

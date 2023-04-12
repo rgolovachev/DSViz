@@ -23,6 +23,7 @@ public:
   void Insert(int id, PNode node);
 
   void DeleteTree(int id);
+  void DiscardTree(int id);
 
   size_t Size() const;
 
@@ -59,7 +60,7 @@ public:
 
   void DeleteTree(int id);
 
-  void SubscribeToView(Observer<Model::MsgType> *view_observer);
+  void SubscribeToView(Observer<MsgType> *view_observer);
 
 private:
   void update(PNode v);

@@ -112,7 +112,7 @@ auto View::GetCallback() {
 
 View::View()
     : MW_{std::make_unique<MainWindow>()},
-      panner_{std::make_unique<CustomPanner>(MW_->GetPlot()->canvas())},
+      panner_{std::make_unique<CustomPanner>(MW_->Plot()->canvas())},
       port_in_{GetCallback()} {
   ConnectWidgets();
   ConfigureWidgets();
@@ -151,23 +151,23 @@ void View::OnButtonClick() {
   if (sender() == MW_->ui->mergeButton) {
     SetEnabledWidgets(false);
     merge_executing_ = true;
-    int left_id = MW_->ui->lefttreeId->currentText().toInt(),
-        right_id = MW_->ui->righttreeId->currentText().toInt();
-    port_out_.Set(UserQuery{QueryType::merge, {left_id, right_id}});
+    port_out_.Set(UserQuery{QueryType::merge, {left_tree_id_, right_tree_id_}});
     merge_executing_ = false;
     SetEnabledWidgets(true);
-    MW_->ui->maintreeId->setCurrentText(MW_->ui->lefttreeId->currentText());
+    main_tree_id_ = left_tree_id_;
+    int ind = MW_->ui->maintreeId->findText(QString::number(main_tree_id_));
+    MW_->ui->maintreeId->setCurrentIndex(ind);
     return;
   }
 
-  bool ver_correct{}, id_correct{};
-  int id = MW_->ui->maintreeId->currentText().toInt(&id_correct);
+  bool ver_correct{};
+  int id = main_tree_id_;
   int ver = MW_->ui->vertexId->text().toInt(&ver_correct);
 
-  if (id_correct && (sender() == MW_->ui->deltreeButton)) {
+  if (sender() == MW_->ui->deltreeButton) {
     port_out_.Set(UserQuery{QueryType::deltree, {id, 0}});
 
-  } else if (id_correct && ver_correct) {
+  } else if (ver_correct) {
     SetEnabledWidgets(false);
     if (sender() == MW_->ui->insertButton) {
       port_out_.Set(UserQuery{QueryType::insert, {id, ver}});
@@ -186,17 +186,25 @@ void View::OnButtonClick() {
 
 void View::OnZoom(double value) {
   scale_ = value;
-  MW_->GetPlot()->setAxisScale(QwtPlot::xBottom, -kBound / scale_,
-                               kBound / scale_);
-  MW_->GetPlot()->setAxisScale(QwtPlot::yLeft, -kBound / scale_,
-                               kBound / scale_);
+  MW_->Plot()->setAxisScale(QwtPlot::xBottom, -kBound / scale_,
+                            kBound / scale_);
+  MW_->Plot()->setAxisScale(QwtPlot::yLeft, -kBound / scale_, kBound / scale_);
   Draw();
   panner_->moveCanvas(x_, y_);
 }
 
 void View::OnChoiceChange(QString num) {
+  main_tree_id_ = num.toInt();
   Prepare();
   Draw();
+}
+
+void View::OnMergeChoiceChange(QString num) {
+  if (sender() == MW_->ui->lefttreeId) {
+    left_tree_id_ = num.toInt();
+  } else {
+    right_tree_id_ = num.toInt();
+  }
 }
 
 void View::ConnectWidgets() {
@@ -216,18 +224,17 @@ void View::ConnectWidgets() {
                    SLOT(OnZoom(double)));
   QObject::connect(MW_->ui->pauseButton, SIGNAL(clicked()), this,
                    SLOT(OnPauseOrStop()));
-  QObject::connect(MW_->ui->maintreeId, SIGNAL(currentTextChanged(QString)),
-                   this, SLOT(OnChoiceChange(QString)));
+  ConnectComboBoxes();
   QObject::connect(panner_.get(), SIGNAL(panned(int, int)), this,
                    SLOT(OnPanned(int, int)));
 }
 
 void View::ConfigureWidgets() {
-  MW_->GetPlot()->setCanvasBackground(Qt::white);
-  MW_->GetPlot()->setAxisScale(QwtPlot::xBottom, -kBound, kBound);
-  MW_->GetPlot()->setAxisScale(QwtPlot::yLeft, -kBound, kBound);
-  MW_->GetPlot()->enableAxis(0, false);
-  MW_->GetPlot()->enableAxis(2, false);
+  MW_->Plot()->setCanvasBackground(Qt::white);
+  MW_->Plot()->setAxisScale(QwtPlot::xBottom, -kBound, kBound);
+  MW_->Plot()->setAxisScale(QwtPlot::yLeft, -kBound, kBound);
+  MW_->Plot()->enableAxis(0, false);
+  MW_->Plot()->enableAxis(2, false);
   MW_->ui->qwt_slider->setValue(kSliderBegin);
   MW_->ui->qwt_slider->setScale(kSliderLowerBound, kSliderUpperBound);
   panner_->setMouseButton(Qt::LeftButton);
@@ -242,7 +249,7 @@ bool View::DoDelay(MsgCode code) {
 }
 
 void View::HandleMsg(MsgCode code, const BareTrees &trees) {
-  trees_ = trees;
+  trees_ = &trees;
   UpdateComboBox();
   SetStatus(code);
   Prepare();
@@ -252,40 +259,62 @@ void View::HandleMsg(MsgCode code, const BareTrees &trees) {
   }
 }
 
-void View::UpdateComboBox() {
-  QComboBox *maintreeId = MW_->ui->maintreeId,
-            *lefttreeId = MW_->ui->lefttreeId,
-            *righttreeId = MW_->ui->righttreeId;
-  QObject::disconnect(maintreeId, SIGNAL(currentTextChanged(QString)), this,
-                      SLOT(OnChoiceChange(QString)));
-  QString cur_str = GetText(maintreeId);
-  QString merge1_str = GetText(lefttreeId);
-  QString merge2_str = GetText(righttreeId);
-  ClearBox(maintreeId);
-  ClearBox(lefttreeId);
-  ClearBox(righttreeId);
-  for (auto &[num, tree] : trees_) {
-    InsertItem(maintreeId, num);
-    InsertItem(lefttreeId, num);
-    InsertItem(righttreeId, num);
+void View::UpdateTreeId(int &tree_id) {
+  // если дерева с номером tree_id уже не существует, то отрисовываю первое
+  // попавшееся
+  if (trees_->find(tree_id) == trees_->end()) {
+    tree_id = trees_->begin()->first;
   }
+}
+
+void View::ConnectComboBoxes() {
   QObject::connect(MW_->ui->maintreeId, SIGNAL(currentTextChanged(QString)),
                    this, SLOT(OnChoiceChange(QString)));
-  UpdIndex(maintreeId, cur_str);
-  UpdIndex(lefttreeId, merge1_str);
-  UpdIndex(righttreeId, merge2_str);
+  QObject::connect(MW_->ui->lefttreeId, SIGNAL(currentTextChanged(QString)),
+                   this, SLOT(OnMergeChoiceChange(QString)));
+  QObject::connect(MW_->ui->righttreeId, SIGNAL(currentTextChanged(QString)),
+                   this, SLOT(OnMergeChoiceChange(QString)));
+}
+
+void View::DisconnectComboBoxes() {
+  QObject::disconnect(MW_->ui->maintreeId, SIGNAL(currentTextChanged(QString)),
+                      this, SLOT(OnChoiceChange(QString)));
+  QObject::disconnect(MW_->ui->lefttreeId, SIGNAL(currentTextChanged(QString)),
+                      this, SLOT(OnMergeChoiceChange(QString)));
+  QObject::disconnect(MW_->ui->righttreeId, SIGNAL(currentTextChanged(QString)),
+                      this, SLOT(OnMergeChoiceChange(QString)));
+}
+
+void View::UpdateComboBox() {
+  QComboBox *maintree_combobox = MW_->ui->maintreeId,
+            *lefttree_combobox = MW_->ui->lefttreeId,
+            *righttree_combobox = MW_->ui->righttreeId;
+  DisconnectComboBoxes();
+  ClearBox(maintree_combobox);
+  ClearBox(lefttree_combobox);
+  ClearBox(righttree_combobox);
+  for (auto &[num, tree] : *trees_) {
+    InsertItem(maintree_combobox, num);
+    InsertItem(lefttree_combobox, num);
+    InsertItem(righttree_combobox, num);
+  }
+  UpdateTreeId(main_tree_id_);
+  UpdateTreeId(left_tree_id_);
+  UpdateTreeId(right_tree_id_);
+  ConnectComboBoxes();
+  UpdComboBoxText(maintree_combobox, main_tree_id_);
+  UpdComboBoxText(lefttree_combobox, left_tree_id_);
+  UpdComboBoxText(righttree_combobox, right_tree_id_);
 }
 
 void View::SetStatus(MsgCode code) {
   std::string msg;
   if (code == MsgCode::split_succ) {
-    msg = "The left tree ID is " +
-          MW_->ui->maintreeId->currentText().toStdString() + ". The right is " +
-          QString::number(next_id_).toStdString();
+    msg = "The left tree ID is " + std::to_string(main_tree_id_) +
+          ". The right is " + QString::number(next_id_).toStdString();
     ++next_id_;
   } else if (code == MsgCode::merge_end) {
-    msg = Text::GetMsg(MsgCode::merge_end) +
-          MW_->ui->lefttreeId->currentText().toStdString();
+    msg = Text::GetMsg(MsgCode::merge_end) + std::to_string(left_tree_id_);
   } else {
     msg = Text::GetMsg(code);
   }
@@ -294,14 +323,16 @@ void View::SetStatus(MsgCode code) {
 
 void View::Prepare() {
   if (!merge_executing_) {
-    cur_tree_.Fill(trees_[MW_->ui->maintreeId->currentText().toInt()]);
+    cur_tree_.Fill(trees_->at(main_tree_id_));
   } else {
-    cur_tree_.Fill(trees_[MW_->ui->lefttreeId->currentText().toInt()]);
+    // если я выполняю мерж, то я всегда к левому дереву приливаю правое, так
+    // что беру left_tree_id_
+    cur_tree_.Fill(trees_->at(left_tree_id_));
   }
 }
 
 void View::Draw() {
-  auto plot = MW_->GetPlot();
+  auto plot = MW_->Plot();
 
   plot->detachItems();
 
@@ -387,7 +418,7 @@ void View::AttachVertex(PVNode vnode, QwtSymbol *sym) {
     num->setItemAttribute(QwtPlotItem::Legend, true);
   }
 
-  num->attach(MW_->GetPlot());
+  num->attach(MW_->Plot());
 }
 
 QwtSymbol *View::GetSymbol(PVNode vnode) {
@@ -466,13 +497,10 @@ void View::InsertItem(QComboBox *ptr, int num) {
   }
 }
 
-void View::UpdIndex(QComboBox *ptr, const QString &str) {
-  int index = ptr->findText(str);
-  if (index != -1) {
-    ptr->setCurrentIndex(index);
-  } else {
-    ptr->setCurrentIndex(0);
-  }
+void View::UpdComboBoxText(QComboBox *ptr, int cur_id) {
+  // вообще findText может вернуть -1, если не нашел такой строки
+  // но я гарантирую, что существует дерево с номером cur_id
+  ptr->setCurrentIndex(ptr->findText(QString::number(cur_id)));
 }
 
 } // namespace DSViz
